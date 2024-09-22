@@ -1,4 +1,3 @@
-// app/api/logout/route.ts
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -16,7 +15,7 @@ export async function POST() {
 
   // Clear the cookies
   cookies().delete("accessToken");
-  cookies().delete("userId");
+  cookies().delete("userData");
 
   return NextResponse.json({ success: true });
 }

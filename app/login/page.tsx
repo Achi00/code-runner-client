@@ -155,8 +155,11 @@ export default function LoginForm() {
           </div>
         </div>
         <div className="text-center">
-          <a href="#" className="text-sm text-gray-400 hover:text-white">
-            Sign in with SSO
+          <a
+            href="/register"
+            className="text-sm text-gray-400 hover:text-white"
+          >
+            Or create account
           </a>
         </div>
         <div className="text-center text-xs text-gray-500">

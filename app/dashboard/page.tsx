@@ -1,14 +1,15 @@
-import { useUserContext } from "@/components/UserProvider";
-import React from "react";
 import { redirect } from "next/navigation";
+import { getUserData } from "@/lib/auth";
 
-const page = () => {
-  const { user, loading } = useUserContext();
+const page = async () => {
+  const user = await getUserData();
   if (!user) {
     redirect("/login");
   }
 
-  return <div>Welcome to dashboard</div>;
+  const { id, name, email } = user;
+
+  return <div>{name}</div>;
 };
 
 export default page;
