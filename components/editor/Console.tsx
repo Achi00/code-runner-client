@@ -4,7 +4,7 @@ import React from "react";
 const Console = () => {
   return (
     <div className="flex h-full flex-col bg-[#181818]">
-      <div className="flex-none border-b p-2 font-mono text-sm font-semibold">
+      <div className="flex-none p-2 font-mono text-sm font-semibold">
         Console
       </div>
       <ScrollArea className="flex-grow">

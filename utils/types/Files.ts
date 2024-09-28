@@ -6,6 +6,7 @@ export type FilesType = {
 export type Files = {
   filesData: FilesType;
   fileName?: string;
+  userId?: string;
 };
 
 interface filesDataTypes {

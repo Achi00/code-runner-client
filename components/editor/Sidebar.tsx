@@ -1,24 +1,38 @@
 "use client";
-
+import toast from "react-hot-toast";
 import { useState, useRef, useEffect } from "react";
 import { FolderPlus, File, Trash2, AlertCircle } from "lucide-react";
 import { getFileIcon } from "../GetIcons";
 import { Button } from "../ui/button";
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 import { Files } from "@/utils/types/Files";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../ui/alert-dialog";
+import { createPortal } from "react-dom";
+import { AlertDialogHeader, AlertDialogFooter } from "../ui/alert-dialog";
+import { deleteFile } from "@/lib/fetch";
 
 const SUPPORTED_EXTENSIONS = ["js", "css", "html"];
 
 export default function Sidebar({
   filesData,
   onFileSelect,
+  userId,
 }: Files & { onFileSelect: (fileName: string[]) => void }) {
   const [showInput, setShowInput] = useState(false);
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<string[]>(filesData?.filteredFiles || []);
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
   const handleFileClick = (file: string[]) => {
     onFileSelect(file);
@@ -31,11 +45,39 @@ export default function Sidebar({
     }
   }, [showInput]);
 
+  useEffect(() => {
+    setFiles(filesData?.filteredFiles || []);
+  }, [filesData?.filteredFiles]);
+
   const filesList = filesData && filesData.filteredFiles;
+
+  console.log(filesData);
 
   const handlePlusClick = () => {
     setShowInput(true);
     setError("");
+  };
+
+  const handleDeleteClick = (file: string) => {
+    setFileToDelete(file);
+    setIsAlertOpen(true);
+  };
+
+  const handleDeleteConfirm = async (userId: string, fileName: string) => {
+    if (fileName && userId) {
+      try {
+        await deleteFile(userId, fileName);
+        // Update the file list after successful deletion
+        setFiles(files.filter((f) => f !== fileName));
+        console.log(`File deleted: ${fileName}`);
+        toast.success(`File: ${fileName} deleted successfully`);
+      } catch (error) {
+        console.error("Failed to delete file:", error);
+        setError("Failed to delete file. Please try again.");
+      }
+    }
+    setIsAlertOpen(false);
+    setFileToDelete(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,43 +168,68 @@ export default function Sidebar({
   };
 
   return (
-    <div className="w-64 h-screen bg-[#181818] text-white p-4 border-r">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Explorer</h2>
-        <button
-          onClick={handlePlusClick}
-          className="p-1 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
-        >
-          <FolderPlus size={20} />
-        </button>
-      </div>
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="font-bold text-lg">Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      <div className="py-4">
-        {showInput && (
-          <div className="mb-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue || ""}
-              onChange={handleInputChange}
-              onKeyDown={handleInputKeyDown}
-              onBlur={handleInputBlur}
-              placeholder="Enter file name..."
-              className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+    <>
+      <div className="w-64 h-screen bg-[#181818] text-white p-4 border-r">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Explorer</h2>
+          <button
+            onClick={handlePlusClick}
+            className="p-1 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+          >
+            <FolderPlus size={20} />
+          </button>
+        </div>
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="font-bold text-lg">Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
-      </div>
-      <div className="space-y-1">
-        {isLoading && "File creating"}
-        {filesList &&
-          filesList.map((file: string, index: number) => (
+        <div className="py-4">
+          {showInput && (
+            <div className="mb-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue || ""}
+                onChange={handleInputChange}
+                onKeyDown={handleInputKeyDown}
+                onBlur={handleInputBlur}
+                placeholder="Enter file name..."
+                className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+        </div>
+        <div className="space-y-1">
+          {isLoading && "File creating"}
+          {/* {filesList &&
+            filesList.map((file: string, index: number) => (
+              <div
+                key={index}
+                onClick={() => handleFileClick([file])}
+                className="group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer hover:bg-gray-700 h-11"
+              >
+                <div className="flex items-center">
+                  {getFileIcon(file)}
+                  <span className="pl-2 text-lg">{file}</span>
+                </div>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(file);
+                  }}
+                  className="outline-none hidden group-hover:flex items-center justify-center"
+                  size="icon"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))} */}
+        </div>
+        <div className="space-y-1">
+          {files.map((file, index) => (
             <div
               key={index}
               onClick={() => handleFileClick([file])}
@@ -173,6 +240,10 @@ export default function Sidebar({
                 <span className="pl-2 text-lg">{file}</span>
               </div>
               <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(file);
+                }}
                 className="outline-none hidden group-hover:flex items-center justify-center"
                 size="icon"
               >
@@ -180,26 +251,42 @@ export default function Sidebar({
               </Button>
             </div>
           ))}
+        </div>
       </div>
-      <div className="space-y-1">
-        {files.map((file, index) => (
-          <div
-            key={index}
-            className="group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer hover:bg-gray-700 h-11"
-          >
-            <div className="flex items-center">
-              {getFileIcon(file)}
-              <span className="pl-2 text-lg">{file}</span>
-            </div>
-            <Button
-              className="outline-none hidden group-hover:flex items-center justify-center"
-              size="icon"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-      </div>
-    </div>
+      {typeof window !== "undefined" &&
+        createPortal(
+          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <AlertDialogContent className="bg-white text-black">
+              <AlertDialogHeader className="text-black">
+                <AlertDialogTitle className="text-2xl">
+                  Confirm Deletion
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-md">
+                  This action cannot be undone. This will permanently delete the
+                  file{" "}
+                  <span className="font-extrabold text-black font-sans">
+                    "{fileToDelete}"
+                  </span>{" "}
+                  from your account.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() =>
+                    fileToDelete &&
+                    handleDeleteConfirm(userId as string, fileToDelete)
+                  }
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>,
+          document.body
+        )}
+    </>
   );
 }

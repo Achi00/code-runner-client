@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { UserProvider } from "../components/UserProvider";
 import { getUserData } from "../lib/auth";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,6 +35,7 @@ export default async function RootLayout({
       >
         <UserProvider initialUser={initialUser}>
           <Navbar />
+          <Toaster />
           {children}
         </UserProvider>
       </body>

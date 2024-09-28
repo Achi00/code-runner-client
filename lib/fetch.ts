@@ -58,3 +58,56 @@ export async function getHtmlContent(fileNames: string[], userId: string) {
     throw error;
   }
 }
+
+export async function executeCode({
+  userId,
+  entryFile,
+  htmlFile,
+}: {
+  userId: string;
+  entryFile: string;
+  htmlFile: string;
+}) {
+  const id = String(userId);
+  try {
+    if (!userId || !entryFile || !htmlFile) {
+      throw new Error("userId, entryFile and htmlFile is required");
+    }
+    const response = await fetch("http://localhost:8000/v1/run/jsdom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId: id, entryFile, htmlFile }),
+    });
+    if (!response.ok) {
+      throw new Error(`Error executing code: ${response.statusText}`);
+    }
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Failed to execute code:", error);
+    throw error;
+  }
+}
+
+export async function deleteFile(userId: string, fileName: string) {
+  try {
+    const res = await fetch("http://localhost:8000/v1/create-files", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, fileName }),
+    });
+    if (!res.ok) {
+      throw new Error(`Error deleting file: ${res.statusText}`);
+    }
+    const data = await res.json();
+    console.log("File deleted successfully");
+    return data;
+  } catch (error) {
+    console.error("Failed to delete file:", error);
+  }
+}

@@ -80,7 +80,11 @@ export default function ClientComponent({
 
   return (
     <div className="w-full h-screen flex">
-      <Sidebar filesData={filesData} onFileSelect={handleFileSelect} />
+      <Sidebar
+        userId={userId}
+        filesData={filesData}
+        onFileSelect={handleFileSelect}
+      />
 
       <ResizablePanelGroup direction="vertical">
         <ResizablePanel defaultSize={75}>

@@ -1,8 +1,8 @@
 "use client";
-import Editor from "@monaco-editor/react";
+import Editor, { OnMount } from "@monaco-editor/react";
 import { Button } from "../ui/button";
 import { CodeEditorProps } from "@/utils/types/Files";
-import { getHtmlContent } from "@/lib/fetch";
+import { executeCode, getHtmlContent } from "@/lib/fetch";
 import { useEffect, useState } from "react";
 
 export default function CodeEditor({
@@ -15,10 +15,17 @@ export default function CodeEditor({
   const [selectedFileEnd, setSelectedFileEnd] = useState("");
   const [editorInstance, setEditorInstance] = useState<any>(null);
 
+  // store if any html file has script tag
   let hasScript: boolean = false;
   const filesList = filesData.filteredFiles;
+  const entryFile = filesList.find((file) => file.endsWith(".js"));
+  const htmlFile = filesList.find((file) => file.endsWith(".html"));
 
   const handleSubmit = async () => {};
+
+  const handleEditorDidMount: OnMount = (editor) => {
+    setEditorInstance(editor); // Store the editor instance
+  };
 
   const handleFetchHtmlFiles = async () => {
     try {
@@ -34,34 +41,36 @@ export default function CodeEditor({
   };
 
   async function runCode() {
-    const hasJsFile = filesList.some(
-      (file) => file.split(".").pop()?.toLowerCase() === "js"
-    );
-    const hasHtmlFile = filesList.some(
-      (file) => file.split(".").pop()?.toLowerCase() === "html"
-    );
-
-    if (hasJsFile && hasHtmlFile && hasScript) {
-      console.log("Includes both JS and HTML with a <script> tag");
-      console.log(hasJsFile, hasHtmlFile, hasScript);
-      // Run your jsdom logic here
-    } else {
-      console.log("Does not include the necessary files or <script> tag");
-      console.log(hasJsFile, hasHtmlFile, hasScript);
+    // const hasJsFile = filesList.some(
+    //   (file) => file.split(".").pop()?.toLowerCase() === "js"
+    // );
+    // const hasHtmlFile = filesList.some(
+    //   (file) => file.split(".").pop()?.toLowerCase() === "html"
+    // );
+    // if (hasJsFile && hasHtmlFile && hasScript) {
+    //   console.log("Includes both JS and HTML with a <script> tag");
+    //   console.log(hasJsFile, hasHtmlFile, hasScript);
+    //   // const res = await executeCode({userId, })
+    //   // Run your jsdom logic here
+    // } else {
+    //   console.log("Does not include the necessary files or <script> tag");
+    //   console.log(hasJsFile, hasHtmlFile, hasScript);
+    // }
+    console.log(entryFile, htmlFile, userId);
+    if (entryFile && htmlFile) {
+      const data = await executeCode({ userId, entryFile, htmlFile });
+      console.log(data);
     }
   }
-  // if (fileContent.name.split(".").pop()?.toLowerCase()) {
 
-  // console.log(filesData);
-  // console.log(content);
-  // }
-  // console.log(getHtmls);
   async function handleEditorChange(value: string | undefined, event: any) {
     setTimeout(() => {
       runCode();
+      console.log(filesList);
     }, 1000);
   }
 
+  // Update the file extension and editor language when fileName changes
   useEffect(() => {
     let fileExtencion = fileName.split(".").pop()?.toLowerCase();
     if (fileExtencion == "html") {
@@ -73,9 +82,19 @@ export default function CodeEditor({
     }
   }, [fileName]);
 
+  // Reset undo stack and update editor content when fileName changes
+
+  useEffect(() => {
+    if (editorInstance && content) {
+      editorInstance.setValue(content); // Update editor content
+      editorInstance.getModel()?.pushStackElement(); // Clear the undo stack
+    }
+  }, [fileName, content, editorInstance]);
+
   return (
     <div className="flex w-full justify-center items-start h-screen px-2 py-6 bg-[#1E1E1E]">
       <Button onClick={handleFetchHtmlFiles}>Check HTML Files</Button>
+      <Button>Run</Button>
       <div className="w-full h-screen">
         <form action="#" onSubmit={handleSubmit}>
           <div className="">
@@ -89,20 +108,8 @@ export default function CodeEditor({
               language={selectedFileEnd}
               value={content || ""}
               onChange={handleEditorChange}
+              onMount={handleEditorDidMount}
             />
-          </div>
-
-          <div className="flex justify-between pt-2">
-            <div className="flex items-center space-x-5"></div>
-
-            <div className="flex-shrink-0">
-              <Button
-                type="submit"
-                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-              >
-                Run
-              </Button>
-            </div>
           </div>
         </form>
       </div>
