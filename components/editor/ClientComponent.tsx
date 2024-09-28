@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import CodeEditor from "@/components/editor/CodeEditor";
 import Console from "@/components/editor/Console";
@@ -11,7 +10,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Files, FilesType } from "@/utils/types/Files";
+import { codeResult, Files, FilesType } from "@/utils/types/Files";
 
 interface ClientComponentProps {
   filesData: FilesType;
@@ -24,6 +23,8 @@ export default function ClientComponent({
 }: ClientComponentProps) {
   const [selectedFileContent, setSelectedFileContent] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
+  // update state from CodeEditor component
+  const [codeOutput, setCodeOutput] = useState<codeResult | null>(null);
 
   // Handle file selection and fetch its content dynamically
   const handleFileSelect = async (fileNames: string[]) => {
@@ -73,10 +74,13 @@ export default function ClientComponent({
     }
   };
 
-  // console.log(filesData.filteredFiles);
+  // clears console data from Console.tsx
+  const handleClear = () => {
+    setCodeOutput(null);
+  };
+
   const files = filesData.filteredFiles;
   const getHtmls = files.filter((file) => file.endsWith(".html"));
-  // console.log(getHtmls);
 
   return (
     <div className="w-full h-screen flex">
@@ -97,6 +101,9 @@ export default function ClientComponent({
                   content={selectedFileContent}
                   filesData={filesData}
                   getHtmls={getHtmls}
+                  onCodeRun={(data) => {
+                    setCodeOutput(data);
+                  }}
                 />
                 <ScrollArea className="flex-grow">
                   <pre className="p-4">{selectedFileContent}</pre>
@@ -111,7 +118,7 @@ export default function ClientComponent({
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel defaultSize={25}>
-          <Console />
+          <Console codeOutput={codeOutput} onClear={handleClear} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

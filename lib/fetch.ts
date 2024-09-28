@@ -111,3 +111,19 @@ export async function deleteFile(userId: string, fileName: string) {
     console.error("Failed to delete file:", error);
   }
 }
+
+export async function updateCodeFiles(
+  userId: string,
+  fileName: string,
+  fileContent: string
+) {
+  try {
+    const res = fetch("http://localhost:8000/v1/create-files", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, fileName, fileContent }),
+    });
+  } catch (error) {}
+}

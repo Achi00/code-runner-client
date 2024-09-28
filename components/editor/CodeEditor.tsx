@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { CodeEditorProps } from "@/utils/types/Files";
 import { executeCode, getHtmlContent } from "@/lib/fetch";
 import { useEffect, useState } from "react";
+import { Loader2, Play } from "lucide-react";
 
 export default function CodeEditor({
   fileName,
@@ -11,17 +12,17 @@ export default function CodeEditor({
   userId,
   filesData,
   getHtmls,
+  onCodeRun,
 }: CodeEditorProps) {
   const [selectedFileEnd, setSelectedFileEnd] = useState("");
   const [editorInstance, setEditorInstance] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // store if any html file has script tag
   let hasScript: boolean = false;
   const filesList = filesData.filteredFiles;
   const entryFile = filesList.find((file) => file.endsWith(".js"));
   const htmlFile = filesList.find((file) => file.endsWith(".html"));
-
-  const handleSubmit = async () => {};
 
   const handleEditorDidMount: OnMount = (editor) => {
     setEditorInstance(editor); // Store the editor instance
@@ -33,39 +34,28 @@ export default function CodeEditor({
       hasScript = hasScriptTag; // Update hasScript variable
 
       console.log("Contains <script> tag?", hasScriptTag);
-
-      runCode(); // Call runCode after checking HTML files
     } catch (error) {
       console.error("Error fetching HTML files:", error);
     }
   };
 
-  async function runCode() {
-    // const hasJsFile = filesList.some(
-    //   (file) => file.split(".").pop()?.toLowerCase() === "js"
-    // );
-    // const hasHtmlFile = filesList.some(
-    //   (file) => file.split(".").pop()?.toLowerCase() === "html"
-    // );
-    // if (hasJsFile && hasHtmlFile && hasScript) {
-    //   console.log("Includes both JS and HTML with a <script> tag");
-    //   console.log(hasJsFile, hasHtmlFile, hasScript);
-    //   // const res = await executeCode({userId, })
-    //   // Run your jsdom logic here
-    // } else {
-    //   console.log("Does not include the necessary files or <script> tag");
-    //   console.log(hasJsFile, hasHtmlFile, hasScript);
-    // }
-    console.log(entryFile, htmlFile, userId);
+  async function handleRunCode() {
     if (entryFile && htmlFile) {
-      const data = await executeCode({ userId, entryFile, htmlFile });
-      console.log(data);
+      try {
+        setIsLoading(true);
+        const data = await executeCode({ userId, entryFile, htmlFile });
+        console.log(data);
+        onCodeRun(data);
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+        console.error(error);
+      }
     }
   }
 
   async function handleEditorChange(value: string | undefined, event: any) {
     setTimeout(() => {
-      runCode();
       console.log(filesList);
     }, 1000);
   }
@@ -92,27 +82,40 @@ export default function CodeEditor({
   }, [fileName, content, editorInstance]);
 
   return (
-    <div className="flex w-full justify-center items-start h-screen px-2 py-6 bg-[#1E1E1E]">
-      <Button onClick={handleFetchHtmlFiles}>Check HTML Files</Button>
-      <Button>Run</Button>
-      <div className="w-full h-screen">
-        <form action="#" onSubmit={handleSubmit}>
-          <div className="">
-            <label htmlFor="comment" className="sr-only">
-              Add your code
-            </label>
+    <>
+      <div className="flex flex-col w-full justify-center items-start h-screen px-2 py-2 bg-[#1E1E1E]">
+        <div className="pb-6 pt-2 pl-2">
+          <Button
+            disabled={isLoading}
+            className="flex items-center gap-1 bg-[#D0FB51] text-black hover:text-white"
+            onClick={handleRunCode}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Running...
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5" />
+                Run
+              </>
+            )}
+          </Button>
+        </div>
+        <div className="w-full h-screen">
+          <Editor
+            height="85vh"
+            theme="vs-dark"
+            language={selectedFileEnd}
+            value={content || ""}
+            onChange={handleEditorChange}
+            onMount={handleEditorDidMount}
+          />
+        </div>
 
-            <Editor
-              height="85vh"
-              theme="vs-dark"
-              language={selectedFileEnd}
-              value={content || ""}
-              onChange={handleEditorChange}
-              onMount={handleEditorDidMount}
-            />
-          </div>
-        </form>
+        {/* <Button onClick={handleFetchHtmlFiles}>Check HTML Files</Button> */}
       </div>
-    </div>
+    </>
   );
 }
