@@ -1,7 +1,13 @@
 "use client";
 import toast from "react-hot-toast";
 import { useState, useRef, useEffect } from "react";
-import { FolderPlus, File, Trash2, AlertCircle } from "lucide-react";
+import {
+  FolderPlus,
+  File,
+  Trash2,
+  AlertCircle,
+  CircleAlert,
+} from "lucide-react";
 import { getFileIcon } from "../GetIcons";
 import { Button } from "../ui/button";
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
@@ -51,9 +57,34 @@ export default function Sidebar({
 
   const filesList = filesData && filesData.filteredFiles;
 
-  console.log(filesData);
+  // console.log(filesData);
 
   const handlePlusClick = () => {
+    if (files.length >= 2) {
+      toast("You can't have more than 2 files", {
+        duration: 4000,
+        position: "top-center",
+
+        // Styling
+        style: { backgroundColor: "#D0FB51", fontWeight: "700" },
+
+        // Custom Icon
+        icon: <CircleAlert />,
+
+        // Change colors of success/error/loading icon
+        iconTheme: {
+          primary: "#000",
+          secondary: "#000",
+        },
+
+        // Aria
+        ariaProps: {
+          role: "status",
+          "aria-live": "polite",
+        },
+      });
+      return;
+    }
     setShowInput(true);
     setError("");
   };
@@ -98,7 +129,7 @@ export default function Sidebar({
       const response = await fetch("http://localhost:8000/v1/create-files", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: "65", fileName }), // Replace '65' with dynamic userId as needed
+        body: JSON.stringify({ userId, fileName }),
       });
 
       if (!response.ok) {
@@ -168,7 +199,7 @@ export default function Sidebar({
   };
 
   return (
-    <>
+    <div>
       <div className="w-64 h-screen bg-[#181818] text-white p-4 border-r">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Explorer</h2>
@@ -202,32 +233,7 @@ export default function Sidebar({
             </div>
           )}
         </div>
-        <div className="space-y-1">
-          {isLoading && "File creating"}
-          {/* {filesList &&
-            filesList.map((file: string, index: number) => (
-              <div
-                key={index}
-                onClick={() => handleFileClick([file])}
-                className="group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer hover:bg-gray-700 h-11"
-              >
-                <div className="flex items-center">
-                  {getFileIcon(file)}
-                  <span className="pl-2 text-lg">{file}</span>
-                </div>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteClick(file);
-                  }}
-                  className="outline-none hidden group-hover:flex items-center justify-center"
-                  size="icon"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))} */}
-        </div>
+
         <div className="space-y-1">
           {files.map((file, index) => (
             <div
@@ -287,6 +293,6 @@ export default function Sidebar({
           </AlertDialog>,
           document.body
         )}
-    </>
+    </div>
   );
 }

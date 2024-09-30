@@ -112,18 +112,48 @@ export async function deleteFile(userId: string, fileName: string) {
   }
 }
 
+// update file content in database & file system itself
 export async function updateCodeFiles(
   userId: string,
-  fileName: string,
-  fileContent: string
+  filesList: string[],
+  htmlContent: string,
+  jsContent: string
 ) {
+  // convert userId from number to string
+  userId = String(userId);
+  if (!Array.isArray(filesList)) {
+    throw new Error("filesList must be an array");
+  }
+  // creating files array to pass multiple files to api for update
+  const files = filesList
+    .map((fileName) => {
+      if (fileName.endsWith(".js")) {
+        return {
+          fileName,
+          fileContent: jsContent,
+        };
+      } else if (fileName.endsWith(".html")) {
+        return {
+          fileName,
+          fileContent: htmlContent,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
   try {
-    const res = fetch("http://localhost:8000/v1/create-files", {
+    const res = await fetch("http://localhost:8000/v1/create-files", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId, fileName, fileContent }),
+      body: JSON.stringify({ userId, files }),
     });
-  } catch (error) {}
+    if (!res.ok) {
+      throw new Error(`Error updating file: ${res.statusText}`);
+    }
+    console.log("All files updated successfully");
+  } catch (error) {
+    console.error("Failed to update file:", error);
+  }
 }

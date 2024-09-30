@@ -59,7 +59,7 @@ const Console = ({ codeOutput, onClear }: ConsoleProps) => {
               )}
             </TabsContent>
             <TabsContent value="logs" className="p-4 font-mono text-sm">
-              {codeOutput.logs.length > 0 ? (
+              {codeOutput.logs?.length > 0 ? (
                 codeOutput.logs.map((log, index) => (
                   <pre className="text-xl" key={index}>
                     {log}
