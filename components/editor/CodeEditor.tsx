@@ -4,8 +4,9 @@ import { Button } from "../ui/button";
 import { CodeEditorProps } from "@/utils/types/Files";
 import { executeCode, getHtmlContent, updateCodeFiles } from "@/lib/fetch";
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Play } from "lucide-react";
+import { Circle, Loader2, Play, X } from "lucide-react";
 import NoFile from "./NoFile";
+import { getFileIcon } from "../GetIcons";
 
 export default function CodeEditor({
   fileName,
@@ -26,8 +27,12 @@ export default function CodeEditor({
     html: false,
     javascript: false,
   });
+  // tabs
+  const [openedTabs, setOpenedTabs] = useState<string[]>([]);
 
   const isUpdating = useRef(false);
+  // editor instance models to keep undo/redo stack between file changes
+  // const modelsRef = useRef<{ [key: string]: monaco.editor.ITextModel }>({});
 
   let hasScript: boolean = false;
   // store if any html file has script tag
@@ -38,6 +43,22 @@ export default function CodeEditor({
 
   const handleEditorDidMount: OnMount = (editor) => {
     setEditorInstance(editor); // Store the editor instance
+  };
+
+  const handleCloseTabs = (tab: string, fileExtension: string | undefined) => {
+    setOpenedTabs((prevTabs) => prevTabs.filter((t) => t !== tab));
+    // Remove content and unsaved status if needed
+    if (fileExtension && fileExtension === ".html") {
+      setHtmlContent("");
+    } else if (fileExtension && fileExtension === ".js") {
+      setHtmlContent("");
+    }
+    // setHtmlContent("");
+    setUnsavedFiles((prev) => {
+      const updated = { ...prev };
+      delete updated[tab];
+      return updated;
+    });
   };
 
   const handleFetchHtmlFiles = async () => {
@@ -113,6 +134,18 @@ export default function CodeEditor({
     console.log("js:" + jsContent);
   }
 
+  useEffect(() => {
+    if (fileName) {
+      setOpenedTabs((prevTabs) => {
+        const updatedTabs = Array.from(new Set([fileName, ...prevTabs])).slice(
+          0,
+          2
+        );
+        return updatedTabs;
+      });
+    }
+  }, [fileName]);
+
   // Update the file extension and editor language when fileName changes
   useEffect(() => {
     let fileExtension = fileName.split(".").pop()?.toLowerCase();
@@ -166,7 +199,45 @@ export default function CodeEditor({
   // }, [fileName, content, editorInstance]);
 
   return (
-    <div className="flex flex-col w-full justify-center items-start h-screen px-2 py-2 bg-[#1E1E1E]">
+    <div className="flex flex-col w-full justify-center items-start h-screen  bg-[#1E1E1E]">
+      <div className="flex h-10 w-full border-b border-gray-700">
+        {openedTabs.length > 0 &&
+          openedTabs.map((tabs) => {
+            const fileExtension = tabs.split(".").pop()?.toLowerCase();
+            const fileKey =
+              fileExtension === "html"
+                ? "html"
+                : fileExtension === "js"
+                ? "javascript"
+                : fileExtension;
+            const isUnsaved = fileKey && unsavedFiles[fileKey];
+            return (
+              <div
+                key={tabs}
+                className="flex items-center bg-[#1E1E1E] text-gray-300 px-3 py-1 border border-gray-600 w-40"
+              >
+                <div className="flex items-center space-x-2 flex-grow overflow-hidden">
+                  {isUnsaved && (
+                    <Circle
+                      className="w-2 h-2 fill-white text-white animate-pulse"
+                      aria-label="Unsaved changes"
+                    />
+                  )}
+                  <span className="flex items-center gap-1" title={tabs}>
+                    {getFileIcon(tabs)} {tabs}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleCloseTabs(tabs, fileExtension)}
+                  className="ml-2 p-1 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  aria-label="Close file"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
+      </div>
       <div className="pb-6 pt-2 pl-2">
         <Button
           disabled={isLoading || !fileName}
@@ -185,14 +256,6 @@ export default function CodeEditor({
             </div>
           )}
         </Button>
-        {(unsavedFiles.html || unsavedFiles.javascript) && (
-          <div className="text-red-500 mt-2">
-            {unsavedFiles.html && <p>Warning: HTML file has unsaved changes</p>}
-            {unsavedFiles.javascript && (
-              <p>Warning: JS file has unsaved changes</p>
-            )}
-          </div>
-        )}
       </div>
       <div className="w-full h-screen">
         {!fileName ? (
@@ -202,7 +265,6 @@ export default function CodeEditor({
             height="85vh"
             theme="vs-dark"
             language={selectedFileEnd}
-            // value={content || ""}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
           />

@@ -7,6 +7,7 @@ import {
   Trash2,
   AlertCircle,
   CircleAlert,
+  Loader2,
 } from "lucide-react";
 import { getFileIcon } from "../GetIcons";
 import { Button } from "../ui/button";
@@ -23,6 +24,7 @@ import {
 import { createPortal } from "react-dom";
 import { AlertDialogHeader, AlertDialogFooter } from "../ui/alert-dialog";
 import { deleteFile } from "@/lib/fetch";
+import { Skeleton } from "../ui/skeleton";
 
 const SUPPORTED_EXTENSIONS = ["js", "css", "html"];
 
@@ -39,9 +41,11 @@ export default function Sidebar({
   const [isLoading, setIsLoading] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+  const [isSelected, setIsSelected] = useState([""]);
 
   const handleFileClick = (file: string[]) => {
     onFileSelect(file);
+    setIsSelected(file);
     console.log(file);
   };
 
@@ -54,10 +58,6 @@ export default function Sidebar({
   useEffect(() => {
     setFiles(filesData?.filteredFiles || []);
   }, [filesData?.filteredFiles]);
-
-  const filesList = filesData && filesData.filteredFiles;
-
-  // console.log(filesData);
 
   const handlePlusClick = () => {
     if (files.length >= 2) {
@@ -198,6 +198,27 @@ export default function Sidebar({
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-64 bg-zinc-900 text-white p-6">
+        <div className="flex justify-between items-center mb-4">
+          <Skeleton className="h-6 w-20 bg-zinc-800" />
+          <Skeleton className="h-6 w-6 bg-zinc-800" />
+        </div>
+        <div className="space-y-4 pt-10">
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-6 w-4 bg-red-800" />
+            <Skeleton className="h-6 w-36 bg-zinc-800" />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-6 w-4 bg-yellow-800" />
+            <Skeleton className="h-6 w-36 bg-zinc-800" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="w-64 h-screen bg-[#181818] text-white p-4 border-r">
@@ -239,7 +260,9 @@ export default function Sidebar({
             <div
               key={index}
               onClick={() => handleFileClick([file])}
-              className="group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer hover:bg-gray-700 h-11"
+              className={`group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer ${
+                file == isSelected[0] && "bg-gray-600"
+              } hover:bg-gray-700 h-11`}
             >
               <div className="flex items-center">
                 {getFileIcon(file)}
