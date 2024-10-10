@@ -68,7 +68,7 @@ export default function ClientComponent({
       }
 
       // console.log(fileContentData);
-      console.log(selectedFileContent);
+      // console.log(selectedFileContent);
     } catch (error) {
       console.error("Error fetching files:", error);
     }
