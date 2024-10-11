@@ -10,8 +10,8 @@ import { getFileIcon } from "../GetIcons";
 import { getLanguageFromFileExtension } from "@/lib/helpers";
 
 export default function CodeEditor({
-  fileName,
-  content,
+  selectedFileName,
+  selectedFileContent,
   userId,
   filesData,
   getHtmls,
@@ -52,7 +52,12 @@ export default function CodeEditor({
     setMonacoInstance(monaco);
   };
 
+  const handleSwitchTabs = (tab: string) => {};
+
   const handleCloseTabs = (tab: string, fileExtension: string | undefined) => {
+    if (openedTabs.length < 2) {
+      return;
+    }
     setOpenedTabs((prevTabs) => prevTabs.filter((t) => t !== tab));
     setUnsavedFiles((prev) => {
       const updated = { ...prev };
@@ -115,102 +120,48 @@ export default function CodeEditor({
     }
   }
 
-  // async function handleEditorChange(value: string | undefined, event: any) {
-  //   if (isUpdating.current) return;
-
-  //   if (selectedFileEnd == "html") {
-  //     setHtmlContent(value || "");
-  //     // mark html file as unsaved after change
-  //     // Compare value with original content to check for unsaved changes
-  //     const hasUnsavedChanges = value !== content;
-  //     setUnsavedFiles((prev) => ({ ...prev, html: hasUnsavedChanges }));
-  //   } else if (selectedFileEnd == "javascript") {
-  //     setJsContent(value || "");
-  //     // mark js file as unsaved after change
-  //     const hasUnsavedChanges = value !== content;
-  //     setUnsavedFiles((prev) => ({ ...prev, javascript: hasUnsavedChanges }));
-  //   }
-  //   console.log("html:" + htmlContent);
-  //   console.log("js:" + jsContent);
-  // }
-
-  // open tabs on file click
-
   function handleEditorChange(value: string | undefined, event: any) {
     if (isUpdating.current) return;
 
     // Update fileContents with the new value
     setFileContents((prev) => ({
       ...prev,
-      [fileName]: value || "",
+      [selectedFileName]: value || "",
     }));
 
     // Mark the file as having unsaved changes
-    const hasUnsavedChanges = value !== content;
-    setUnsavedFiles((prev) => ({ ...prev, [fileName]: hasUnsavedChanges }));
+    const hasUnsavedChanges = value !== selectedFileContent;
+    setUnsavedFiles((prev) => ({
+      ...prev,
+      [selectedFileName]: hasUnsavedChanges,
+    }));
+    console.log(unsavedFiles);
   }
 
   // Update fileContents when content prop changes
   useEffect(() => {
-    if (content !== undefined) {
+    if (selectedFileContent !== undefined) {
       setFileContents((prev) => ({
         ...prev,
-        [fileName]: content,
+        [selectedFileName]: selectedFileContent,
       }));
     }
-  }, [content, fileName]);
+  }, [selectedFileContent, selectedFileName]);
 
   useEffect(() => {
-    if (fileName) {
+    if (selectedFileName) {
       setOpenedTabs((prevTabs) => {
-        const updatedTabs = Array.from(new Set([fileName, ...prevTabs])).slice(
-          0,
-          2
-        );
+        const updatedTabs = Array.from(
+          new Set([selectedFileName, ...prevTabs])
+        ).slice(0, 2);
         return updatedTabs;
       });
     }
-  }, [fileName]);
-
-  // Update the file extension and editor language when fileName changes
-  // useEffect(() => {
-  //   let fileExtension = fileName.split(".").pop()?.toLowerCase();
-  //   setSelectedFileEnd(
-  //     fileExtension === "html"
-  //       ? "html"
-  //       : fileExtension === "js"
-  //       ? "javascript"
-  //       : "css"
-  //   );
-  //   // When switching files, set editor content to previously stored unsaved content if it exists to avoid unneccessary data fetching
-  //   if (editorInstance) {
-  //     isUpdating.current = true; // Start of programmatic update
-
-  //     if (fileExtension === "html") {
-  //       if (unsavedFiles.html && htmlContent) {
-  //         editorInstance.setValue(htmlContent);
-  //       } else {
-  //         setHtmlContent(content || "");
-  //         editorInstance.setValue(content || "");
-  //       }
-  //     } else if (fileExtension === "js") {
-  //       if (unsavedFiles.javascript && jsContent) {
-  //         editorInstance.setValue(jsContent);
-  //       } else {
-  //         setJsContent(content || "");
-  //         editorInstance.setValue(content || "");
-  //       }
-  //     } else {
-  //       editorInstance.setValue(content || "");
-  //     }
-
-  //     isUpdating.current = false; // End of programmatic update
-  //   }
-  // }, [fileName, content, editorInstance]);
+  }, [selectedFileName]);
 
   useEffect(() => {
-    if (editorInstance && monacoInstance && fileName) {
-      const fileExtension = fileName.split(".").pop()?.toLowerCase();
+    if (editorInstance && monacoInstance && selectedFileName) {
+      const fileExtension = selectedFileName.split(".").pop()?.toLowerCase();
       setSelectedFileEnd(
         fileExtension === "html"
           ? "html"
@@ -219,34 +170,34 @@ export default function CodeEditor({
           : "css"
       );
 
-      const uri = monacoInstance.Uri.parse(`file:///${fileName}`);
+      const uri = monacoInstance.Uri.parse(`file:///${selectedFileName}`);
       let model = monacoInstance.editor.getModel(uri);
 
-      const fileContent = fileContents[fileName];
+      const fileContent = fileContents[selectedFileName];
 
       if (!model) {
         const initialValue =
-          fileContent !== undefined ? fileContent : content || "";
+          fileContent !== undefined ? fileContent : selectedFileContent || "";
         model = monacoInstance.editor.createModel(
           initialValue,
-          getLanguageFromFileExtension(fileName),
+          getLanguageFromFileExtension(selectedFileName),
           uri
         );
-        models.current[fileName] = model;
+        models.current[selectedFileName] = model;
       } else {
         // Update the model's value if content prop has changed and there are no unsaved changes
         if (
-          content !== undefined &&
-          !unsavedFiles[fileName] &&
-          model.getValue() !== content
+          selectedFileContent !== undefined &&
+          !unsavedFiles[selectedFileName] &&
+          model.getValue() !== selectedFileContent
         ) {
           isUpdating.current = true;
-          model.setValue(content);
+          model.setValue(selectedFileContent);
           isUpdating.current = false;
           // Update fileContents with the new content
           setFileContents((prev) => ({
             ...prev,
-            [fileName]: content,
+            [selectedFileName]: selectedFileContent,
           }));
         }
       }
@@ -255,87 +206,54 @@ export default function CodeEditor({
       editorInstance.setModel(model);
       isUpdating.current = false; // End of programmatic update
     }
-    console.log(content);
+    console.log(selectedFileContent);
   }, [
-    fileName,
-    content,
+    selectedFileName,
+    selectedFileContent,
     editorInstance,
     monacoInstance,
     fileContents,
     unsavedFiles,
   ]);
 
-  function setValue() {
-    let fileExtension = fileName.split(".").pop()?.toLowerCase();
-    setSelectedFileEnd(
-      fileExtension === "html"
-        ? "html"
-        : fileExtension === "js"
-        ? "javascript"
-        : "css"
-    );
-    if (fileExtension === "html") {
-      if (unsavedFiles.html && htmlContent) {
-        return htmlContent;
-      } else {
-        setHtmlContent(content || "");
-        return content || "";
-      }
-    } else if (fileExtension === "js") {
-      if (unsavedFiles.javascript && jsContent) {
-        return jsContent;
-      } else {
-        setJsContent(content || "");
-        return content || "";
-      }
-    } else {
-      return content || "";
-    }
-  }
-
   return (
     <div className="flex flex-col w-full justify-center items-start h-screen  bg-[#1E1E1E]">
-      <div className="flex h-10 w-full border-b border-gray-700">
+      <div className="flex flex-col gap-4 p-2 w-full border-b border-gray-700">
         {openedTabs.length > 0 &&
           openedTabs.map((tabs) => {
             const fileExtension = tabs.split(".").pop()?.toLowerCase();
-            const fileKey =
-              fileExtension === "html"
-                ? "html"
-                : fileExtension === "js"
-                ? "javascript"
-                : fileExtension;
-            const isUnsaved = fileKey && unsavedFiles[fileKey];
+            const isUnsaved = unsavedFiles[tabs];
             return (
               <div
                 key={tabs}
-                className="flex items-center bg-[#1E1E1E] text-gray-300 px-3 py-1 border border-gray-600 w-40"
+                className="flex items-center bg-[#1E1E1E] text-gray-300 px-3 py-1w-40"
               >
-                <div className="flex items-center space-x-2 flex-grow overflow-hidden">
-                  {isUnsaved && (
-                    <Circle
-                      className="w-2 h-2 fill-white text-white animate-pulse"
-                      aria-label="Unsaved changes"
-                    />
-                  )}
-                  <span className="flex items-center gap-1" title={tabs}>
-                    {getFileIcon(tabs)} {tabs}
-                  </span>
-                </div>
                 <button
-                  onClick={() => handleCloseTabs(tabs, fileExtension)}
-                  className="ml-2 p-1 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
-                  aria-label="Close file"
+                  className="w-full flex items-center"
+                  onClick={() => handleSwitchTabs(tabs)}
                 >
-                  <X className="w-4 h-4" />
+                  <div className="flex items-center space-x-2 flex-grow overflow-hidden">
+                    <span className="flex items-center gap-1" title={tabs}>
+                      {getFileIcon(tabs)} {tabs}
+                    </span>
+                  </div>
+                  {isUnsaved && (
+                    <div className="flex items-center">
+                      <Circle
+                        className="mr-2 w-2 h-2 fill-white text-white animate-pulse"
+                        aria-label="Unsaved changes"
+                      />
+                      <p>Unsaved Content</p>
+                    </div>
+                  )}
                 </button>
               </div>
             );
           })}
       </div>
-      <div className="pb-6 pt-2 pl-2">
+      <div className="pb-6 pt-10 pl-2">
         <Button
-          disabled={isLoading || !fileName}
+          disabled={isLoading || !selectedFileName}
           className="flex items-center gap-1 bg-[#D0FB51] text-black hover:text-white"
           onClick={handleRunCode}
         >
@@ -353,18 +271,14 @@ export default function CodeEditor({
         </Button>
       </div>
       <div className="w-full h-screen">
-        {!fileName ? (
+        {!selectedFileName ? (
           <NoFile />
         ) : (
           <Editor
             height="85vh"
             theme="vs-dark"
-            path={fileName}
-            defaultLanguage={getLanguageFromFileExtension(fileName)}
-            // defaultValue={fileContents[activeFileName]}
-            // defaultValue={content || ""}
-            // value={fileContents[activeFileName]}
-            // language={selectedFileEnd}
+            path={selectedFileName}
+            defaultLanguage={getLanguageFromFileExtension(selectedFileName)}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
             saveViewState={true}

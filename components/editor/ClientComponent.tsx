@@ -97,8 +97,8 @@ export default function ClientComponent({
               <div className="flex h-full flex-col">
                 <CodeEditor
                   userId={userId}
-                  fileName={selectedFileName}
-                  content={selectedFileContent}
+                  selectedFileName={selectedFileName}
+                  selectedFileContent={selectedFileContent}
                   filesData={filesData}
                   getHtmls={getHtmls}
                   onCodeRun={(data) => {

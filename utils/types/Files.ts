@@ -21,8 +21,8 @@ export type codeResult = {
 };
 
 export interface CodeEditorProps {
-  fileName: string;
-  content: string;
+  selectedFileName: string;
+  selectedFileContent: string;
   userId: string;
   filesData: filesDataTypes;
   getHtmls: string[];
