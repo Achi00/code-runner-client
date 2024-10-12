@@ -25,6 +25,9 @@ export default function ClientComponent({
   const [selectedFileName, setSelectedFileName] = useState("");
   // update state from CodeEditor component
   const [codeOutput, setCodeOutput] = useState<codeResult | null>(null);
+  const [fileContents, setFileContents] = useState<{ [key: string]: string }>(
+    {}
+  );
 
   // Handle file selection and fetch its content dynamically
   const handleFileSelect = async (fileNames: string[]) => {
@@ -65,6 +68,15 @@ export default function ClientComponent({
           .join("\n\n");
 
         setSelectedFileContent(combinedFileContent);
+        // Update fileContents for each file
+        const newFileContents = fileContentData.files.reduce(
+          (acc: string[], file: any) => {
+            acc[file.fileName] = file.fileContent;
+            return acc;
+          },
+          {}
+        );
+        setFileContents((prev) => ({ ...prev, ...newFileContents }));
       }
 
       // console.log(fileContentData);
@@ -77,6 +89,17 @@ export default function ClientComponent({
   // clears console data from Console.tsx
   const handleClear = () => {
     setCodeOutput(null);
+  };
+
+  // updated code after code run
+  const handleFileContentChange = (fileName: string, content: string) => {
+    setFileContents((prev) => ({
+      ...prev,
+      [fileName]: content,
+    }));
+    if (fileName === selectedFileName) {
+      setSelectedFileContent(content);
+    }
   };
 
   const files = filesData.filteredFiles;
@@ -104,6 +127,7 @@ export default function ClientComponent({
                   onCodeRun={(data) => {
                     setCodeOutput(data);
                   }}
+                  onFileContentChange={handleFileContentChange}
                 />
                 <ScrollArea className="flex-grow">
                   <pre className="p-4">{selectedFileContent}</pre>

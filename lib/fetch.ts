@@ -59,7 +59,7 @@ export async function getHtmlContent(fileNames: string[], userId: string) {
   }
 }
 
-export async function executeCode({
+export async function executeJSDomCode({
   userId,
   entryFile,
   htmlFile,
@@ -74,6 +74,38 @@ export async function executeCode({
       throw new Error("userId, entryFile and htmlFile is required");
     }
     const response = await fetch("http://localhost:8000/v1/run/jsdom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId: id, entryFile, htmlFile }),
+    });
+    if (!response.ok) {
+      throw new Error(`Error executing code: ${response.statusText}`);
+    }
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Failed to execute code:", error);
+    throw error;
+  }
+}
+export async function executeNodeCode({
+  userId,
+  entryFile,
+  htmlFile,
+}: {
+  userId: string;
+  entryFile: string;
+  htmlFile: string;
+}) {
+  const id = String(userId);
+  try {
+    if (!userId || !entryFile || !htmlFile) {
+      throw new Error("userId, entryFile and htmlFile is required");
+    }
+    const response = await fetch("http://localhost:8000/v1/run/run-node", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -153,6 +185,7 @@ export async function updateCodeFiles(
       throw new Error(`Error updating file: ${res.statusText}`);
     }
     console.log("All files updated successfully");
+    return res;
   } catch (error) {
     console.error("Failed to update file:", error);
   }

@@ -2,7 +2,7 @@
 import Editor, { OnMount } from "@monaco-editor/react";
 import { Button } from "../ui/button";
 import { CodeEditorProps } from "@/utils/types/Files";
-import { executeCode, getHtmlContent, updateCodeFiles } from "@/lib/fetch";
+import { executeJSDomCode, getHtmlContent, updateCodeFiles } from "@/lib/fetch";
 import { useEffect, useRef, useState } from "react";
 import { Circle, Loader2, Play, X } from "lucide-react";
 import NoFile from "./NoFile";
@@ -16,14 +16,13 @@ export default function CodeEditor({
   filesData,
   getHtmls,
   onCodeRun,
+  onFileContentChange,
 }: CodeEditorProps) {
   const [selectedFileEnd, setSelectedFileEnd] = useState("");
   const [editorInstance, setEditorInstance] = useState<any>(null);
   const [monacoInstance, setMonacoInstance] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   // store js and html file separately
-  const [htmlContent, setHtmlContent] = useState<string>("");
-  const [jsContent, setJsContent] = useState<string>("");
   // chack if js or html content is saved
   const [unsavedFiles, setUnsavedFiles] = useState<{ [key: string]: boolean }>({
     html: false,
@@ -35,7 +34,6 @@ export default function CodeEditor({
   );
   // tabs
   const [openedTabs, setOpenedTabs] = useState<string[]>([]);
-
   const models = useRef<{ [key: string]: any }>({});
 
   const isUpdating = useRef(false);
@@ -50,31 +48,6 @@ export default function CodeEditor({
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     setEditorInstance(editor); // Store the editor instance
     setMonacoInstance(monaco);
-  };
-
-  const handleSwitchTabs = (tab: string) => {};
-
-  const handleCloseTabs = (tab: string, fileExtension: string | undefined) => {
-    if (openedTabs.length < 2) {
-      return;
-    }
-    setOpenedTabs((prevTabs) => prevTabs.filter((t) => t !== tab));
-    setUnsavedFiles((prev) => {
-      const updated = { ...prev };
-      delete updated[tab];
-      return updated;
-    });
-    setFileContents((prev) => {
-      const updated = { ...prev };
-      delete updated[tab];
-      return updated;
-    });
-    const uri = monacoInstance.Uri.parse(`file:///${tab}`);
-    const model = monacoInstance.editor.getModel(uri);
-    if (model) {
-      model.dispose(); // Dispose the model when closing the tab
-    }
-    delete models.current[tab];
   };
 
   async function handleRunCode() {
@@ -93,8 +66,12 @@ export default function CodeEditor({
     //   console.log("Does not include the necessary files or <script> tag");
     //   console.log(hasJsFile, hasHtmlFile, hasScript);
     // }
+    // destructure filecontent into html and js
+    const jsContent = (entryFile && fileContents[entryFile]) || "";
+    const htmlContent = (htmlFile && fileContents[htmlFile]) || "";
     if (entryFile && htmlFile) {
       try {
+        console.log(unsavedFiles);
         setIsLoading(true);
         if (unsavedFiles.html || unsavedFiles.javascript) {
           const updatedData = await updateCodeFiles(
@@ -103,14 +80,17 @@ export default function CodeEditor({
             htmlContent,
             jsContent
           );
-          console.log("Updated data:", updatedData);
-          // You can call your executeCode method here if necessary
+          const data = await executeJSDomCode({ userId, entryFile, htmlFile });
+          onCodeRun(data);
+          setUnsavedFiles({ html: false, javascript: false });
+          setIsLoading(false);
+          console.log("file updated & run seccesfully");
         }
 
         // Run your jsdom logic
-        // const data = await executeCode({ userId, entryFile, htmlFile });
-        // console.log(data);
-        // onCodeRun(data);
+        const data = await executeJSDomCode({ userId, entryFile, htmlFile });
+        console.log(data);
+        onCodeRun(data);
         setUnsavedFiles({ html: false, javascript: false });
         setIsLoading(false);
       } catch (error) {
@@ -122,20 +102,26 @@ export default function CodeEditor({
 
   function handleEditorChange(value: string | undefined, event: any) {
     if (isUpdating.current) return;
-
+    console.log(unsavedFiles);
     // Update fileContents with the new value
     setFileContents((prev) => ({
       ...prev,
       [selectedFileName]: value || "",
     }));
 
+    // Map the file extension to a file type
+    const fileExtension = getLanguageFromFileExtension(selectedFileName);
     // Mark the file as having unsaved changes
     const hasUnsavedChanges = value !== selectedFileContent;
     setUnsavedFiles((prev) => ({
       ...prev,
       [selectedFileName]: hasUnsavedChanges,
+      [fileExtension]: hasUnsavedChanges,
     }));
-    console.log(unsavedFiles);
+    // Notify parent component of the change
+    if (onFileContentChange) {
+      onFileContentChange(selectedFileName, value || "");
+    }
   }
 
   // Update fileContents when content prop changes
@@ -221,32 +207,26 @@ export default function CodeEditor({
       <div className="flex flex-col gap-4 p-2 w-full border-b border-gray-700">
         {openedTabs.length > 0 &&
           openedTabs.map((tabs) => {
-            const fileExtension = tabs.split(".").pop()?.toLowerCase();
             const isUnsaved = unsavedFiles[tabs];
             return (
               <div
                 key={tabs}
                 className="flex items-center bg-[#1E1E1E] text-gray-300 px-3 py-1w-40"
               >
-                <button
-                  className="w-full flex items-center"
-                  onClick={() => handleSwitchTabs(tabs)}
-                >
-                  <div className="flex items-center space-x-2 flex-grow overflow-hidden">
-                    <span className="flex items-center gap-1" title={tabs}>
-                      {getFileIcon(tabs)} {tabs}
-                    </span>
+                <div className="flex items-center space-x-2 flex-grow overflow-hidden">
+                  <span className="flex items-center gap-1" title={tabs}>
+                    {getFileIcon(tabs)} {tabs}
+                  </span>
+                </div>
+                {isUnsaved && (
+                  <div className="flex items-center">
+                    <Circle
+                      className="mr-2 w-2 h-2 fill-white text-white animate-pulse"
+                      aria-label="Unsaved changes"
+                    />
+                    <p>Unsaved Content</p>
                   </div>
-                  {isUnsaved && (
-                    <div className="flex items-center">
-                      <Circle
-                        className="mr-2 w-2 h-2 fill-white text-white animate-pulse"
-                        aria-label="Unsaved changes"
-                      />
-                      <p>Unsaved Content</p>
-                    </div>
-                  )}
-                </button>
+                )}
               </div>
             );
           })}

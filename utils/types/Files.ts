@@ -27,4 +27,5 @@ export interface CodeEditorProps {
   filesData: filesDataTypes;
   getHtmls: string[];
   onCodeRun: (data: codeResult) => void;
+  onFileContentChange: (fileName: string, content: string) => void;
 }
