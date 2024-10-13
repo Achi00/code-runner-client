@@ -51,9 +51,9 @@ const Navbar = () => {
     { label: "Contact", href: "/contact" },
   ];
 
-  if (!user) {
-    router.push("/login");
-  }
+  // if (!user) {
+  //   return <Loading />;
+  // }
 
   // if (loading) {
   //   return <Loading />;

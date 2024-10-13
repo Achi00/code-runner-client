@@ -22,6 +22,7 @@ export default function CodeEditor({
   const [editorInstance, setEditorInstance] = useState<any>(null);
   const [monacoInstance, setMonacoInstance] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   // store js and html file separately
   // chack if js or html content is saved
   const [unsavedFiles, setUnsavedFiles] = useState<{ [key: string]: boolean }>({
@@ -40,16 +41,17 @@ export default function CodeEditor({
 
   let hasScript: boolean = false;
   // store if any html file has script tag
-  const filesList = filesData.filteredFiles;
+  const filesList = filesData.filteredFiles || [];
   // console.log("file list:" + filesList);
-  const entryFile = filesList.find((file) => file.endsWith(".js"));
-  const htmlFile = filesList.find((file) => file.endsWith(".html"));
+  const entryFile = filesList.find((file) => file.endsWith(".js")) || "";
+  const htmlFile = filesList.find((file) => file.endsWith(".html")) || "";
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     setEditorInstance(editor); // Store the editor instance
     setMonacoInstance(monaco);
   };
 
+  // TODO: chack if its jsdom or only node js code
   async function handleRunCode() {
     // const hasJsFile = filesList.some(
     //   (file) => file.split(".").pop()?.toLowerCase() === "js"
@@ -99,6 +101,53 @@ export default function CodeEditor({
       }
     }
   }
+
+  async function handleSave() {
+    // TODO: can have only one file to save it, one which is selected will be saved with SelectedFile
+    const jsContent = (entryFile && fileContents[entryFile]) || "";
+    const htmlContent = (htmlFile && fileContents[htmlFile]) || "";
+    if (entryFile || htmlFile) {
+      try {
+        console.log(unsavedFiles);
+        setIsSaving(true);
+        if (unsavedFiles.html || unsavedFiles.javascript) {
+          const updatedData = await updateCodeFiles(
+            userId,
+            filesList,
+            htmlContent,
+            jsContent
+          );
+          const data = await executeJSDomCode({ userId, entryFile, htmlFile });
+          // onCodeRun(data);
+          setUnsavedFiles({ html: false, javascript: false });
+          setIsSaving(false);
+          console.log("file updated & run seccesfully");
+        }
+      } catch (error) {
+        setIsSaving(false);
+        console.error(error);
+      }
+    }
+  }
+
+  // detect key downs for save file
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault(); // Prevent the browser from opening the "Save As" dialog
+        await handleSave();
+        // console.log("File saved");
+      }
+    };
+
+    // Attach event listener
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   function handleEditorChange(value: string | undefined, event: any) {
     if (isUpdating.current) return;
@@ -173,7 +222,7 @@ export default function CodeEditor({
       } else {
         // Update the model's value if content prop has changed and there are no unsaved changes
         if (
-          selectedFileContent !== undefined &&
+          selectedFileContent !== null &&
           !unsavedFiles[selectedFileName] &&
           model.getValue() !== selectedFileContent
         ) {
@@ -231,7 +280,7 @@ export default function CodeEditor({
             );
           })}
       </div>
-      <div className="pb-6 pt-10 pl-2">
+      <div className="pb-6 pt-10 pl-2 flex items-center gap-3">
         <Button
           disabled={isLoading || !selectedFileName}
           className="flex items-center gap-1 bg-[#D0FB51] text-black hover:text-white"
@@ -249,6 +298,12 @@ export default function CodeEditor({
             </div>
           )}
         </Button>
+        {isSaving && (
+          <div className="flex items-center gap-1">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Saving...
+          </div>
+        )}
       </div>
       <div className="w-full h-screen">
         {!selectedFileName ? (

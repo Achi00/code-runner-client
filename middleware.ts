@@ -8,6 +8,10 @@ export async function middleware(request: NextRequest) {
 
   const accessToken = request.cookies.get("accessToken")?.value;
 
+  if (request.nextUrl.pathname.startsWith("/register")) {
+    return NextResponse.next();
+  }
+
   if (!accessToken && !request.nextUrl.pathname.startsWith("/login")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -28,5 +32,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/login", "/register"],
 };

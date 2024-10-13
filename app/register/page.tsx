@@ -5,30 +5,38 @@ import { useRouter } from "next/navigation";
 import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github } from "lucide-react";
+import { Github, MailCheck, MailCheckIcon, Terminal } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 
-interface LoginValues {
+interface RegisterValues {
+  name: string;
   email: string;
   password: string;
+  rePassword: string;
 }
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
+  const [isRegistered, setIsRegistered] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (
-    values: LoginValues,
-    { setSubmitting }: FormikHelpers<LoginValues>
+    values: RegisterValues,
+    { setSubmitting }: FormikHelpers<RegisterValues>
   ) => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
 
       if (response.ok) {
-        router.push("/sandbox"); // Redirect to dashboard on successful login
+        console.log("user registered seccesfully");
+        setIsRegistered(true);
+        toast.success("Successfully toasted!");
       } else {
         const data = await response.json();
         console.log(data);
@@ -41,24 +49,92 @@ export default function LoginForm() {
     }
   };
 
+  const validate = (values: RegisterValues) => {
+    const errors: Partial<RegisterValues> = {};
+
+    if (!values.name) {
+      errors.name = "Name is required";
+    }
+
+    if (!values.email) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      errors.email = "Email is invalid";
+    }
+
+    if (!values.password) {
+      errors.password = "Password is required";
+    }
+
+    if (!values.rePassword) {
+      errors.rePassword = "Please re-enter the password";
+    } else if (values.password !== values.rePassword) {
+      errors.rePassword = "Passwords do not match";
+    }
+
+    return errors;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">Sign in to CodeRunner</h1>
+          <h1 className="text-4xl font-bold">Register to CodeRunner</h1>
           <p className="text-gray-400">
-            Login or register to start building your projects today.
+            register to start building your projects today.
           </p>
         </div>
+        {isRegistered && (
+          // D0FB51
+          <Alert className="shadow-lg max-w-md mx-auto text-gray-300 ">
+            <div className="flex items-start space-x-4">
+              <div className="bg-[#D0FB51] text-black p-2 rounded-full">
+                <MailCheckIcon className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <AlertTitle className="text-xl font-bold mb-1">
+                  Email Registered
+                </AlertTitle>
+                <AlertDescription className=" mb-3">
+                  Please check your inbox and verify your email address to
+                  complete the registration process.
+                </AlertDescription>
+                <Button
+                  asChild
+                  className="bg-[#D0FB51]  text-black hover:text-white font-bold"
+                >
+                  <Link href="/login">Log In</Link>
+                </Button>
+              </div>
+            </div>
+          </Alert>
+        )}
         <Formik
           initialValues={{
+            name: "",
             email: "",
             password: "",
+            rePassword: "",
           }}
+          validate={validate} // Attach the validation function here
           onSubmit={handleSubmit}
         >
           {({ isSubmitting }) => (
             <Form className="space-y-4">
+              <div>
+                <Field
+                  as={Input}
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+                />
+                <ErrorMessage
+                  name="name"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
               <div>
                 <Field
                   as={Input}
@@ -87,13 +163,27 @@ export default function LoginForm() {
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
+              <div>
+                <Field
+                  as={Input}
+                  type="password"
+                  name="rePassword" // Fix the name here
+                  placeholder="Confirm Password"
+                  className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
+                />
+                <ErrorMessage
+                  name="rePassword" // Fix the name here
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
               {error && <div className="text-red-500 text-sm">{error}</div>}
               <Button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded"
               >
-                {isSubmitting ? "Signing in..." : "Sign in"}
+                {isSubmitting ? "Signing up..." : "Sign up"}
               </Button>
             </Form>
           )}

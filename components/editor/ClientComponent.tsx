@@ -102,7 +102,7 @@ export default function ClientComponent({
     }
   };
 
-  const files = filesData.filteredFiles;
+  const files = filesData.filteredFiles || [];
   const getHtmls = files.filter((file) => file.endsWith(".html"));
 
   return (
