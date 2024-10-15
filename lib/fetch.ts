@@ -25,6 +25,26 @@ function searchForScript(htmlContent: string) {
   return regex.test(htmlContent);
 }
 
+export async function detectJsDom(entryFile: string) {
+  try {
+    const data = await fetch("http://localhost:8000/ifjsdom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // Ensure you send JSON content
+      },
+      // body: JSON.stringify({ entryFile }),
+      body: JSON.stringify({ entryFile }),
+    });
+    if (!data.ok) {
+      throw new Error(`Error detecting JSDOM: ${data.statusText}`);
+    }
+    const { hasJsDom } = await data.json();
+    return hasJsDom;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export async function getHtmlContent(fileNames: string[], userId: string) {
   try {
     const response = await fetch(
@@ -148,23 +168,28 @@ export async function deleteFile(userId: string, fileName: string) {
 export async function updateCodeFiles(
   userId: string,
   filesList: string[],
-  htmlContent: string,
-  jsContent: string
+  htmlContent?: string,
+  jsContent?: string
 ) {
   // convert userId from number to string
   userId = String(userId);
   if (!Array.isArray(filesList)) {
     throw new Error("filesList must be an array");
   }
+  console.log(htmlContent);
+  console.log(jsContent);
+  // if (!htmlContent || !jsContent) {
+  //   console.error("html and js content is required");
+  // }
   // creating files array to pass multiple files to api for update
   const files = filesList
     .map((fileName) => {
-      if (fileName.endsWith(".js")) {
+      if (fileName.endsWith(".js") && jsContent) {
         return {
           fileName,
           fileContent: jsContent,
         };
-      } else if (fileName.endsWith(".html")) {
+      } else if (fileName.endsWith(".html") && htmlContent) {
         return {
           fileName,
           fileContent: htmlContent,

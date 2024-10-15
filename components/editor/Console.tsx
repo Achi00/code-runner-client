@@ -27,21 +27,30 @@ const Console = ({ codeOutput, onClear }: ConsoleProps) => {
           <TabsList className="bg-zinc-900 border-b text-white border-zinc-800">
             <TabsTrigger
               value="output"
-              className="data-[state=active]:bg-zinc-800"
+              className="data-[state=active]:bg-zinc-800 flex gap-1"
             >
-              Output
+              Output{" "}
+              {codeOutput.output && codeOutput.output.length > 0 && (
+                <span className="text-[#D0FB51] text-2xl font-bold">!</span>
+              )}
             </TabsTrigger>
             <TabsTrigger
               value="error"
-              className="data-[state=active]:bg-zinc-800"
+              className="data-[state=active]:bg-zinc-800 flex gap-1"
             >
-              Error
+              Error{" "}
+              {codeOutput.error && codeOutput.error.length > 0 && (
+                <span className="text-[#D0FB51]">!</span>
+              )}
             </TabsTrigger>
             <TabsTrigger
               value="logs"
-              className="data-[state=active]:bg-zinc-800"
+              className="data-[state=active]:bg-zinc-800 flex gap-1"
             >
-              Logs
+              Logs{" "}
+              {codeOutput.logs && codeOutput.logs.length > 0 && (
+                <span className="text-[#D0FB51]">!</span>
+              )}
             </TabsTrigger>
           </TabsList>
           <ScrollArea className="flex-grow">
