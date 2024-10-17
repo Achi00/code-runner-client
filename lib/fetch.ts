@@ -169,7 +169,8 @@ export async function updateCodeFiles(
   userId: string,
   filesList: string[],
   htmlContent?: string,
-  jsContent?: string
+  jsContent?: string,
+  cssContent?: string
 ) {
   // convert userId from number to string
   userId = String(userId);
@@ -193,6 +194,11 @@ export async function updateCodeFiles(
         return {
           fileName,
           fileContent: htmlContent,
+        };
+      } else if (fileName.endsWith(".css") && cssContent) {
+        return {
+          fileName,
+          fileContent: cssContent,
         };
       }
       return null;

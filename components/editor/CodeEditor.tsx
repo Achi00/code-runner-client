@@ -34,6 +34,7 @@ export default function CodeEditor({
   const [unsavedFiles, setUnsavedFiles] = useState<{ [key: string]: boolean }>({
     html: false,
     javascript: false,
+    css: false,
   });
   // Store contents of all files
   const [fileContents, setFileContents] = useState<{ [key: string]: string }>(
@@ -51,6 +52,7 @@ export default function CodeEditor({
   // console.log("file list:" + filesList);
   const entryFile = filesList.find((file) => file.endsWith(".js")) || "";
   const htmlFile = filesList.find((file) => file.endsWith(".html")) || "";
+  const cssFile = filesList.find((file) => file.endsWith(".css")) || "";
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     setEditorInstance(editor); // Store the editor instance
@@ -82,7 +84,7 @@ export default function CodeEditor({
       try {
         console.log(unsavedFiles);
         setIsLoading(true);
-        if (unsavedFiles.html || unsavedFiles.javascript) {
+        if (unsavedFiles.html || unsavedFiles.javascript || unsavedFiles.css) {
           const updatedData = await updateCodeFiles(
             userId,
             filesList,
@@ -96,7 +98,7 @@ export default function CodeEditor({
               htmlFile,
             });
             onCodeRun(data);
-            setUnsavedFiles({ html: false, javascript: false });
+            setUnsavedFiles({ html: false, javascript: false, css: false });
             setIsLoading(false);
             console.log("JSDOM file updated & run seccesfully");
           } else {
@@ -106,7 +108,7 @@ export default function CodeEditor({
               htmlFile,
             });
             onCodeRun(data);
-            setUnsavedFiles({ html: false, javascript: false });
+            setUnsavedFiles({ html: false, javascript: false, css: false });
             setIsLoading(false);
             console.log("NODE JS file updated & run seccesfully");
           }
@@ -122,7 +124,7 @@ export default function CodeEditor({
               htmlFile,
             });
         onCodeRun(data);
-        setUnsavedFiles({ html: false, javascript: false });
+        setUnsavedFiles({ html: false, javascript: false, css: false });
         setIsLoading(false);
       } catch (error) {
         setIsLoading(false);
@@ -137,13 +139,16 @@ export default function CodeEditor({
       entryFile && fileContents[entryFile] ? fileContents[entryFile] : null;
     const htmlContent =
       htmlFile && fileContents[htmlFile] ? fileContents[htmlFile] : null;
+    const cssContent =
+      cssFile && fileContents[cssFile] ? fileContents[cssFile] : null;
 
     // Check if there is any unsaved content
-    if (jsContent || htmlContent) {
+    if (jsContent || htmlContent || cssContent) {
       try {
         const filesToUpdate = [];
         if (unsavedFiles.javascript) filesToUpdate.push(entryFile);
         if (unsavedFiles.html) filesToUpdate.push(htmlFile);
+        if (unsavedFiles.css) filesToUpdate.push(cssFile);
 
         if (filesToUpdate.length > 0) {
           setIsSaving(true);
@@ -152,7 +157,8 @@ export default function CodeEditor({
             userId,
             filesToUpdate,
             htmlContent !== null ? htmlContent : undefined,
-            jsContent !== null ? jsContent : undefined
+            jsContent !== null ? jsContent : undefined,
+            cssContent !== null ? cssContent : undefined
           );
 
           if (updatedData) {
@@ -169,7 +175,7 @@ export default function CodeEditor({
     } else {
       console.log("No changes to save.");
     }
-  }, [unsavedFiles, entryFile, htmlFile, fileContents, userId]);
+  }, [unsavedFiles, entryFile, htmlFile, fileContents, cssFile, userId]);
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {

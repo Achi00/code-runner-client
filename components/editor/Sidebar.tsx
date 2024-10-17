@@ -60,8 +60,8 @@ export default function Sidebar({
   }, [filesData?.filteredFiles]);
 
   const handlePlusClick = () => {
-    if (files.length >= 2) {
-      toast("You can't have more than 2 files", {
+    if (files.length >= 3) {
+      toast("You can't have more than 3 files", {
         duration: 4000,
         position: "top-center",
 
