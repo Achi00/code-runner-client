@@ -83,26 +83,31 @@ export async function executeJSDomCode({
   userId,
   entryFile,
   htmlFile,
+  cssFile,
 }: {
   userId: string;
   entryFile: string;
-  htmlFile: string;
+  htmlFile?: string;
+  cssFile?: string;
 }) {
   const id = String(userId);
   try {
     if (!userId || !entryFile || !htmlFile) {
       throw new Error("userId, entryFile and htmlFile is required");
     }
+    // console.log(cssFile);
     const response = await fetch("http://localhost:8000/v1/run/jsdom", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId: id, entryFile, htmlFile }),
+      body: JSON.stringify({ userId: id, entryFile, htmlFile, cssFile }),
     });
     if (!response.ok) {
       throw new Error(`Error executing code: ${response.statusText}`);
     }
+    // console.log("css: " + cssFile);
+    // console.log("html: " + htmlFile);
     const data = await response.json();
     console.log(data);
     return data;

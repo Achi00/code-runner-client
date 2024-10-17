@@ -24,8 +24,13 @@ export interface CodeEditorProps {
   selectedFileName: string;
   selectedFileContent: string;
   userId: string;
+  setHtmlData: (html: string) => void;
   filesData: filesDataTypes;
   getHtmls: string[];
   onCodeRun: (data: codeResult) => void;
   onFileContentChange: (fileName: string, content: string) => void;
+}
+
+export interface previewProps {
+  htmlData: string;
 }

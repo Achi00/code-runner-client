@@ -20,7 +20,7 @@ export default function CodeEditor({
   selectedFileContent,
   userId,
   filesData,
-  getHtmls,
+  setHtmlData,
   onCodeRun,
   onFileContentChange,
 }: CodeEditorProps) {
@@ -46,13 +46,16 @@ export default function CodeEditor({
 
   const isUpdating = useRef(false);
 
-  let hasScript: boolean = false;
   // store if any html file has script tag
   const filesList = filesData.filteredFiles || [];
   // console.log("file list:" + filesList);
   const entryFile = filesList.find((file) => file.endsWith(".js")) || "";
   const htmlFile = filesList.find((file) => file.endsWith(".html")) || "";
   const cssFile = filesList.find((file) => file.endsWith(".css")) || "";
+
+  useEffect(() => {
+    console.log(cssFile);
+  }, []);
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     setEditorInstance(editor); // Store the editor instance
@@ -61,24 +64,10 @@ export default function CodeEditor({
 
   // TODO: chack if its jsdom or only node js code
   async function handleRunCode() {
-    // const hasJsFile = filesList.some(
-    //   (file) => file.split(".").pop()?.toLowerCase() === "js"
-    // );
-    // const hasHtmlFile = filesList.some(
-    //   (file) => file.split(".").pop()?.toLowerCase() === "html"
-    // );
-    // if (hasJsFile && hasHtmlFile && hasScript) {
-    //   console.log("Includes both JS and HTML with a <script> tag");
-    //   console.log(hasJsFile, hasHtmlFile, hasScript);
-    //   // const res = await executeCode({userId, })
-    //   // Run your jsdom logic here
-    // } else {
-    //   console.log("Does not include the necessary files or <script> tag");
-    //   console.log(hasJsFile, hasHtmlFile, hasScript);
-    // }
     // destructure filecontent into html and js
     const jsContent = (entryFile && fileContents[entryFile]) || "";
     const htmlContent = (htmlFile && fileContents[htmlFile]) || "";
+    const cssContent = (cssFile && fileContents[cssFile]) || "";
     const res = await detectJsDom(jsContent);
     if (entryFile && htmlFile) {
       try {
@@ -89,15 +78,21 @@ export default function CodeEditor({
             userId,
             filesList,
             htmlContent,
-            jsContent
+            jsContent,
+            cssContent
           );
           if (updatedData && res) {
             const data = await executeJSDomCode({
               userId,
               entryFile,
               htmlFile,
+              cssFile,
             });
             onCodeRun(data);
+            // update renderable html
+            if (data && data.html) {
+              setHtmlData(data.html);
+            }
             setUnsavedFiles({ html: false, javascript: false, css: false });
             setIsLoading(false);
             console.log("JSDOM file updated & run seccesfully");
@@ -117,13 +112,17 @@ export default function CodeEditor({
 
         // Run your jsdom or node js endpoint if users js code uses DOM manipulation
         const data = res
-          ? await executeJSDomCode({ userId, entryFile, htmlFile })
+          ? await executeJSDomCode({ userId, entryFile, htmlFile, cssFile })
           : await executeNodeCode({
               userId,
               entryFile,
               htmlFile,
+              // cssFile,
             });
         onCodeRun(data);
+        // update renderable html
+        setHtmlData(data.html);
+        // pass generated html to preview page
         setUnsavedFiles({ html: false, javascript: false, css: false });
         setIsLoading(false);
       } catch (error) {
@@ -287,7 +286,7 @@ export default function CodeEditor({
       editorInstance.setModel(model);
       isUpdating.current = false; // End of programmatic update
     }
-    console.log(selectedFileContent);
+    // console.log(selectedFileContent);
   }, [
     selectedFileName,
     selectedFileContent,

@@ -28,6 +28,7 @@ export default function ClientComponent({
   const [fileContents, setFileContents] = useState<{ [key: string]: string }>(
     {}
   );
+  const [htmlData, setHtmlData] = useState<string>("");
 
   // Handle file selection and fetch its content dynamically
   const handleFileSelect = async (fileNames: string[]) => {
@@ -127,6 +128,7 @@ export default function ClientComponent({
                   onCodeRun={(data) => {
                     setCodeOutput(data);
                   }}
+                  setHtmlData={setHtmlData}
                   onFileContentChange={handleFileContentChange}
                 />
                 <ScrollArea className="flex-grow">
@@ -136,7 +138,7 @@ export default function ClientComponent({
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize={50}>
-              <Preview />
+              <Preview htmlData={htmlData} />
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>
