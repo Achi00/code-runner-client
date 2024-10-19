@@ -109,7 +109,6 @@ export async function executeJSDomCode({
     // console.log("css: " + cssFile);
     // console.log("html: " + htmlFile);
     const data = await response.json();
-    console.log(data);
     return data;
   } catch (error) {
     console.error("Failed to execute code:", error);
@@ -182,8 +181,6 @@ export async function updateCodeFiles(
   if (!Array.isArray(filesList)) {
     throw new Error("filesList must be an array");
   }
-  console.log(htmlContent);
-  console.log(jsContent);
   // if (!htmlContent || !jsContent) {
   //   console.error("html and js content is required");
   // }
@@ -224,5 +221,28 @@ export async function updateCodeFiles(
     return res;
   } catch (error) {
     console.error("Failed to update file:", error);
+  }
+}
+
+// packages & dependencies
+
+// get dependencies from user's package.json
+export async function getPackages(userId: string) {
+  console.log(userId);
+  try {
+    const res = await fetch(`http://localhost:8000/v1/install/packagelist`, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json", // Add this header
+      },
+      body: JSON.stringify({ userId }),
+    });
+    if (!res.ok) {
+      throw new Error(`Error getting packages: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error(error);
   }
 }

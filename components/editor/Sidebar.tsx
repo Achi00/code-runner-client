@@ -25,6 +25,7 @@ import { createPortal } from "react-dom";
 import { AlertDialogHeader, AlertDialogFooter } from "../ui/alert-dialog";
 import { deleteFile } from "@/lib/fetch";
 import { Skeleton } from "../ui/skeleton";
+import Dependencies from "../dependencies/Dependencies";
 
 const SUPPORTED_EXTENSIONS = ["js", "css", "html"];
 
@@ -32,6 +33,7 @@ export default function Sidebar({
   filesData,
   onFileSelect,
   userId,
+  dependencies,
 }: Files & { onFileSelect: (fileName: string[]) => void }) {
   const [showInput, setShowInput] = useState(false);
   const [files, setFiles] = useState<string[]>(filesData?.filteredFiles || []);
@@ -221,7 +223,7 @@ export default function Sidebar({
 
   return (
     <div>
-      <div className="w-64 h-screen bg-[#181818] text-white p-4 border-r">
+      <div className=" w-80 h-screen bg-[#181818] text-white p-4 border-r">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Explorer</h2>
           <button
@@ -280,6 +282,9 @@ export default function Sidebar({
               </Button>
             </div>
           ))}
+        </div>
+        <div className="flex items-end">
+          <Dependencies dependencies={dependencies} userId={userId || ""} />
         </div>
       </div>
       {typeof window !== "undefined" &&

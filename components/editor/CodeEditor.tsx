@@ -71,7 +71,6 @@ export default function CodeEditor({
     const res = await detectJsDom(jsContent);
     if (entryFile && htmlFile) {
       try {
-        console.log(unsavedFiles);
         setIsLoading(true);
         if (unsavedFiles.html || unsavedFiles.javascript || unsavedFiles.css) {
           const updatedData = await updateCodeFiles(

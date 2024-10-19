@@ -7,6 +7,7 @@ export type Files = {
   filesData: FilesType;
   fileName?: string;
   userId?: string;
+  dependencies: Dependency;
 };
 
 interface filesDataTypes {
@@ -34,3 +35,15 @@ export interface CodeEditorProps {
 export interface previewProps {
   htmlData: string;
 }
+
+// dependencies
+export type Dependency = {
+  name: string;
+  version: string;
+  dependencies: Dependency[];
+};
+
+export type DependenciesResponse = {
+  dependencies: Dependency;
+  userId: string;
+};

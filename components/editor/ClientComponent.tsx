@@ -10,16 +10,18 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { codeResult, Files, FilesType } from "@/utils/types/Files";
+import { codeResult, Dependency, Files, FilesType } from "@/utils/types/Files";
 
 interface ClientComponentProps {
   filesData: FilesType;
   userId: string;
+  dependencies: Dependency;
 }
 
 export default function ClientComponent({
   filesData,
   userId,
+  dependencies,
 }: ClientComponentProps) {
   const [selectedFileContent, setSelectedFileContent] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
@@ -110,6 +112,7 @@ export default function ClientComponent({
     <div className="w-full h-screen flex">
       <Sidebar
         userId={userId}
+        dependencies={dependencies}
         filesData={filesData}
         onFileSelect={handleFileSelect}
       />
