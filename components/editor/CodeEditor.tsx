@@ -29,6 +29,8 @@ export default function CodeEditor({
   const [monacoInstance, setMonacoInstance] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // check if selected file is js
+  const [isJs, setIsJs] = useState(false);
   // store js and html file separately
   // chack if js or html content is saved
   const [unsavedFiles, setUnsavedFiles] = useState<{ [key: string]: boolean }>({
@@ -229,6 +231,10 @@ export default function CodeEditor({
 
   useEffect(() => {
     if (selectedFileName) {
+      setFileContents((prev) => ({
+        ...prev,
+        [selectedFileName]: prev[selectedFileName] || "",
+      }));
       setOpenedTabs((prevTabs) => {
         const updatedTabs = Array.from(
           new Set([selectedFileName, ...prevTabs])
@@ -236,6 +242,7 @@ export default function CodeEditor({
         return updatedTabs;
       });
     }
+    console.log(selectedFileContent);
   }, [selectedFileName]);
 
   useEffect(() => {
@@ -252,7 +259,7 @@ export default function CodeEditor({
       const uri = monacoInstance.Uri.parse(`file:///${selectedFileName}`);
       let model = monacoInstance.editor.getModel(uri);
 
-      const fileContent = fileContents[selectedFileName];
+      const fileContent = fileContents[selectedFileName] || "";
 
       if (!model) {
         const initialValue =
@@ -344,7 +351,9 @@ export default function CodeEditor({
       <div className="pb-6 pt-10 pl-2 flex items-center gap-3">
         <Button
           disabled={isLoading || !selectedFileName}
-          className="flex items-center gap-1 bg-[#D0FB51] text-black hover:text-white"
+          className={`flex ${
+            selectedFileEnd != "javascript" && "hidden"
+          } items-center gap-1 bg-[#D0FB51] text-black hover:text-white`}
           onClick={handleRunCode}
         >
           {isLoading ? (

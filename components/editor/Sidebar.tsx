@@ -146,6 +146,7 @@ export default function Sidebar({
         setIsLoading(false);
       }
     } catch (err) {
+      console.log(err);
       setIsLoading(false);
       setError("Error creating file. Please try again.");
     }
@@ -290,16 +291,16 @@ export default function Sidebar({
       {typeof window !== "undefined" &&
         createPortal(
           <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-            <AlertDialogContent className="bg-white text-black">
-              <AlertDialogHeader className="text-black">
+            <AlertDialogContent className="bg-[#000] text-white">
+              <AlertDialogHeader className="text-white">
                 <AlertDialogTitle className="text-2xl">
                   Confirm Deletion
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-md">
                   This action cannot be undone. This will permanently delete the
                   file{" "}
-                  <span className="font-extrabold text-black font-sans">
-                    "{fileToDelete}"
+                  <span className="font-extrabold text-gray-300">
+                    {fileToDelete}
                   </span>{" "}
                   from your account.
                 </AlertDialogDescription>
@@ -309,6 +310,7 @@ export default function Sidebar({
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
+                  className="bg-red-600"
                   onClick={() =>
                     fileToDelete &&
                     handleDeleteConfirm(userId as string, fileToDelete)

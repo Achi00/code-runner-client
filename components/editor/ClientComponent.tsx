@@ -58,10 +58,11 @@ export default function ClientComponent({
       const fileContentData = await fileContentResponse.json();
 
       // Assuming the response contains an array of files with `fileName` and `fileContent`
-      if (fileContentData.files.length === 1) {
+      if (fileContentData.files.length == 1) {
         // If only one file, set its content directly
-        setSelectedFileContent(fileContentData.files[0].fileContent);
-      } else {
+        const fileContent = fileContentData.files[0].fileContent || "";
+        setSelectedFileContent(fileContent);
+      } else if (fileContentData.files.length > 1) {
         // If multiple files are fetched, handle accordingly
         const combinedFileContent = fileContentData.files
           .map(
@@ -80,6 +81,9 @@ export default function ClientComponent({
           {}
         );
         setFileContents((prev) => ({ ...prev, ...newFileContents }));
+      } else {
+        // No files returned
+        setSelectedFileContent("");
       }
 
       // console.log(fileContentData);

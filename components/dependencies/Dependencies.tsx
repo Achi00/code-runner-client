@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { Package } from "lucide-react";
+import { Download, Package } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
@@ -79,6 +79,7 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
         console.log(data);
       }
       console.log("all done");
+      setSelectedPackages([]);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -107,31 +108,34 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
       setSuggestions([]); // Clear suggestions if input is too short
     }
   };
-  const data = dependencies.dependencies;
+
+  const data = dependencies?.dependencies;
   return (
     <div className="w-full h-[70vh] flex flex-col">
       <div className="container mx-auto p-4 max-w-2xl flex flex-col h-full">
         <div className="mt-auto flex flex-col gap-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead>Package</TableHead>
-                <TableHead>Version</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((dep, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                  </TableCell>
-                  <TableCell className="font-medium">{dep.name}</TableCell>
-                  <TableCell>{dep.version}</TableCell>
+          {data && data.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead>Package</TableHead>
+                  <TableHead>Version</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {data.map((dep, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                    </TableCell>
+                    <TableCell className="font-medium">{dep.name}</TableCell>
+                    <TableCell>{dep.version}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
           <div className="grid w-full max-w-sm items-center gap-5 pb-5">
             <div>
               <Input
@@ -147,7 +151,7 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
                   {suggestions.map((pkg: any, index: number) => (
                     <li
                       key={index}
-                      className="p-2 border-gray-400 cursor-pointer hover:text-black"
+                      className="p-2 h-auto overflow-auto border-gray-400 cursor-pointer"
                     >
                       <button
                         className="transition duration-300 ease-in-out hover:bg-[#D0FB51] hover:text-black rounded-md px-1"
@@ -164,6 +168,7 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
               )}
             </div>
             <Button
+              disabled={selectedPackages.length == 0 || loading}
               onClick={() => handleSubmit(userId)}
               type="submit"
               className=" hover:bg-gray-800 border font-semibold py-2 px-4 rounded"
@@ -174,6 +179,12 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
                 ? "Install"
                 : "Select Package"}
             </Button>
+            {selectedPackages.length > 0 && (
+              <div className="flex items-center gap-2 py-2 border-b justify-center">
+                <Download className="text-[#D0FB51]" />
+                <h2 className="text-xl font-semibold">Pending Install</h2>
+              </div>
+            )}
             <ul>
               {selectedPackages.length > 0 &&
                 selectedPackages.map(
