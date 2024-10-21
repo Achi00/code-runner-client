@@ -17,16 +17,13 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 
 interface RegisterValues {
-  name: string;
   email: string;
-  password: string;
-  rePassword: string;
 }
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
-  const router = useRouter();
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (
     values: RegisterValues,
@@ -41,7 +38,7 @@ export default function LoginForm() {
 
       if (response.ok) {
         console.log("user registered seccesfully");
-        setIsRegistered(true);
+        setEmailSent(true);
       } else {
         const data = await response.json();
         console.log(data);
@@ -57,24 +54,10 @@ export default function LoginForm() {
   const validate = (values: RegisterValues) => {
     const errors: Partial<RegisterValues> = {};
 
-    if (!values.name) {
-      errors.name = "Name is required";
-    }
-
     if (!values.email) {
       errors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(values.email)) {
       errors.email = "Email is invalid";
-    }
-
-    if (!values.password) {
-      errors.password = "Password is required";
-    }
-
-    if (!values.rePassword) {
-      errors.rePassword = "Please re-enter the password";
-    } else if (values.password !== values.rePassword) {
-      errors.rePassword = "Passwords do not match";
     }
 
     return errors;
@@ -84,9 +67,9 @@ export default function LoginForm() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">Register to CodeRunner</h1>
+          <h1 className="text-4xl font-bold">Reset your password</h1>
           <p className="text-gray-400">
-            register to start building your projects today.
+            Enter your email and get password recovery link
           </p>
         </div>
         {isRegistered && (
@@ -116,30 +99,13 @@ export default function LoginForm() {
         )}
         <Formik
           initialValues={{
-            name: "",
             email: "",
-            password: "",
-            rePassword: "",
           }}
-          validate={validate} // Attach the validation function here
+          validate={validate}
           onSubmit={handleSubmit}
         >
           {({ isSubmitting }) => (
             <Form className="space-y-4">
-              <div>
-                <Field
-                  as={Input}
-                  type="text"
-                  name="name"
-                  placeholder="Name"
-                  className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-                />
-                <ErrorMessage
-                  name="name"
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
               <div>
                 <Field
                   as={Input}
@@ -154,41 +120,14 @@ export default function LoginForm() {
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              <div>
-                <Field
-                  as={Input}
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-                />
-                <ErrorMessage
-                  name="password"
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-              <div>
-                <Field
-                  as={Input}
-                  type="password"
-                  name="rePassword" // Fix the name here
-                  placeholder="Confirm Password"
-                  className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
-                />
-                <ErrorMessage
-                  name="rePassword" // Fix the name here
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
+
               {error && <div className="text-red-500 text-sm">{error}</div>}
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-white hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded"
+                className="w-full border border-gray-500 font-semibold py-2 px-4 rounded"
               >
-                {isSubmitting ? "Signing up..." : "Sign up"}
+                {isSubmitting ? "Sending validation url..." : "Reset Password"}
               </Button>
             </Form>
           )}
@@ -205,13 +144,12 @@ export default function LoginForm() {
         </div>
         <div className="text-center">
           <Button className="w-full bg-[#d0fb51] hover:bg-[#c5ef4c] text-black font-semibold py-2 px-4 rounded">
-            <a href="/login" className="flex items-center gap-2 text-black">
+            <Link href="/login" className="flex items-center gap-2 text-black">
               <LogIn />
               Log In
-            </a>
+            </Link>
           </Button>
         </div>
-
         <div className="text-center text-xs text-gray-500">
           By continuing, you agree to CodeRunner
           <br />

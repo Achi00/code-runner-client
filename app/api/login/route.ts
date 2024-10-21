@@ -5,7 +5,7 @@ import { encrypt } from "@/lib/encryption";
 export async function POST(request: Request) {
   const { email, password } = await request.json();
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_URL}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),

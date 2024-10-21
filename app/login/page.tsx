@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github } from "lucide-react";
+import { Github, LockKeyhole } from "lucide-react";
+import Link from "next/link";
 
 interface LoginValues {
   email: string;
@@ -104,16 +105,18 @@ export default function LoginForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-black px-2 text-gray-400">
-              Or continue with
+              Forgot Password?
             </span>
           </div>
         </div>
         <div className="space-y-4">
           <Button className="w-full bg-[#d0fb51] hover:bg-[#c5ef4c] text-black font-semibold py-2 px-4 rounded">
-            <Github className="mr-2 h-5 w-5" />
-            Sign in with GitHub
+            <Link href="/reset" className="flex items-center">
+              <LockKeyhole className="mr-2 h-5 w-5" />
+              Reset your password
+            </Link>
           </Button>
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <Button
               variant="outline"
               className="w-full text-white bg-zinc-800 hover:bg-zinc-700"
@@ -151,7 +154,7 @@ export default function LoginForm() {
               </svg>
               Sign in with Apple
             </Button>
-          </div>
+          </div> */}
         </div>
         <div className="text-center">
           <a

@@ -6,7 +6,7 @@ export async function POST() {
 
   if (userId) {
     // Notify the backend to invalidate the refresh token
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout`, {
+    await fetch(`${process.env.NEXT_PUBLIC_AUTH_URL}/logout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),

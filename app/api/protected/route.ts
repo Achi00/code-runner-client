@@ -33,11 +33,14 @@ export async function GET(request: Request) {
   }
 
   // Use the access token to make the authenticated request
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/protected`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_AUTH_URL}/protected`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
 
   if (response.ok) {
     const data = await response.json();

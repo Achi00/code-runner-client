@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const { name, email, password } = await request.json();
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/register`,
+      `${process.env.NEXT_PUBLIC_AUTH_URL}/register`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
