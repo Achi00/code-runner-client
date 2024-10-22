@@ -15,7 +15,6 @@ const page = async () => {
     `http://localhost:8000/v1/create-files/list/${userId}`
   );
   const filesData = await fileList.json();
-  console.log(filesData);
   // fetch dependencied
   let dependencies;
   if (userId) {

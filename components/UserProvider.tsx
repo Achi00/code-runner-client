@@ -7,7 +7,8 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { TUser } from "@/utils/types/auth";
 
 type UserContextType = {
@@ -28,23 +29,38 @@ export function UserProvider({
   const [user, setUser] = useState<TUser | null>(initialUser);
   const [loading, setLoading] = useState(!initialUser);
   const router = useRouter();
+  const [changes, setChanges] = useState(0);
+
+  let pathname = usePathname();
 
   useEffect(() => {
+    // Fetch user data if no initial user
     if (!initialUser) {
-      fetch("/api/user")
-        .then((res) => res.json())
-        .then((data) => {
-          setUser(data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setUser(null);
-          setLoading(false);
-        });
+      fetchUser();
     }
-  }, [initialUser]);
+
+    // Listen for route changes and refetch user data on route change
+    const handleRouteChange = () => {
+      fetchUser(); // Re-fetch user data when route changes
+    };
+
+    handleRouteChange();
+  }, [initialUser, pathname]);
+
+  const fetchUser = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/userdata");
+      const data = await res.json();
+      setUser(data.userData);
+    } catch (error) {
+      setUser(null);
+    }
+    setLoading(false);
+  };
 
   const logout = async () => {
+    setLoading(true);
     try {
       await fetch("/api/logout", { method: "POST" });
       setUser(null);
@@ -52,6 +68,7 @@ export function UserProvider({
     } catch (error) {
       console.error("Logout failed", error);
     }
+    setLoading(false);
   };
 
   return (

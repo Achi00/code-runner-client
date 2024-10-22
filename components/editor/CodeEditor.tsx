@@ -29,8 +29,7 @@ export default function CodeEditor({
   const [monacoInstance, setMonacoInstance] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // check if selected file is js
-  const [isJs, setIsJs] = useState(false);
+
   // store js and html file separately
   // chack if js or html content is saved
   const [unsavedFiles, setUnsavedFiles] = useState<{ [key: string]: boolean }>({

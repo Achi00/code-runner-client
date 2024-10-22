@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github, LockKeyhole } from "lucide-react";
+import { Github, LockKeyhole, RotateCcw } from "lucide-react";
 import Link from "next/link";
 
 interface LoginValues {
@@ -112,7 +112,7 @@ export default function LoginForm() {
         <div className="space-y-4">
           <Button className="w-full bg-[#d0fb51] hover:bg-[#c5ef4c] text-black font-semibold py-2 px-4 rounded">
             <Link href="/reset" className="flex items-center">
-              <LockKeyhole className="mr-2 h-5 w-5" />
+              <RotateCcw className="mr-2 h-5 w-5" />
               Reset your password
             </Link>
           </Button>

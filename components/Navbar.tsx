@@ -16,48 +16,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import Loading from "./LoadingUI";
 
 const Navbar = () => {
-  const { user, loading } = useUserContext();
+  const { user, logout } = useUserContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const router = useRouter();
-
   const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        // Redirect to home page or login page after successful logout
-        router.push("/login");
-      } else {
-        console.error("Logout failed");
-        // Handle logout failure (e.g., show an error message to the user)
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Handle any network errors or exceptions
-    }
+    await logout();
   };
 
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Sandbox", href: "/sandbox" },
-    { label: "Services", href: "/services" },
-    { label: "Contact", href: "/contact" },
   ];
 
-  // if (!user) {
-  //   return <Loading />;
-  // }
-
-  // if (loading) {
-  //   return <Loading />;
-  // }
   return (
     <nav className="border-b border-gray-500 bg-transparent w-full shadow-md">
       <div className="sm:px-6 lg:px-12">

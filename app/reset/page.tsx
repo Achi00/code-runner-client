@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Github,
+  Loader2,
   LogIn,
   MailCheck,
   MailCheckIcon,
+  Send,
   Terminal,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
@@ -22,7 +24,6 @@ interface RegisterValues {
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
-  const [isRegistered, setIsRegistered] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (
@@ -30,19 +31,18 @@ export default function LoginForm() {
     { setSubmitting }: FormikHelpers<RegisterValues>
   ) => {
     try {
-      const response = await fetch("/api/register", {
+      setEmailSent(false);
+      const response = await fetch("/api/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
 
       if (response.ok) {
-        console.log("user registered seccesfully");
         setEmailSent(true);
       } else {
         const data = await response.json();
-        console.log(data);
-        setError(data.error || "An error occurred during login");
+        setError("An error occurred during login");
       }
     } catch (err) {
       setError("An error occurred during login");
@@ -72,7 +72,7 @@ export default function LoginForm() {
             Enter your email and get password recovery link
           </p>
         </div>
-        {isRegistered && (
+        {emailSent && (
           // D0FB51
           <Alert className="shadow-lg max-w-md mx-auto text-gray-300 ">
             <div className="flex items-start space-x-4">
@@ -81,18 +81,12 @@ export default function LoginForm() {
               </div>
               <div className="flex-1">
                 <AlertTitle className="text-xl font-bold mb-1">
-                  Email Registered
+                  Please Check Your Email
                 </AlertTitle>
                 <AlertDescription className=" mb-3">
-                  Please check your inbox and verify your email address to
-                  complete the registration process.
+                  Please visit your email and follow url to reset your account
+                  password
                 </AlertDescription>
-                <Button
-                  asChild
-                  className="bg-[#D0FB51]  text-black hover:text-white font-bold"
-                >
-                  <Link href="/login">Log In</Link>
-                </Button>
               </div>
             </div>
           </Alert>
@@ -127,7 +121,17 @@ export default function LoginForm() {
                 disabled={isSubmitting}
                 className="w-full border border-gray-500 font-semibold py-2 px-4 rounded"
               >
-                {isSubmitting ? "Sending validation url..." : "Reset Password"}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <p className="text-lg">Sending validation url...</p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Send className="w-4 h-4" />
+                    <p className="text-lg">Send</p>
+                  </div>
+                )}
               </Button>
             </Form>
           )}
