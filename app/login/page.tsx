@@ -114,7 +114,7 @@ export default function LoginForm() {
           <Button className="w-full bg-[#d0fb51] hover:bg-[#c5ef4c] text-black font-semibold py-2 px-4 rounded">
             <Link href="/reset" className="flex items-center">
               <RotateCcw className="mr-2 h-5 w-5" />
-              Reset your password
+              Forgot Password?
             </Link>
           </Button>
           {/* <div className="grid grid-cols-2 gap-4">

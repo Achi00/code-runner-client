@@ -27,11 +27,6 @@ const Navbar = () => {
     await logout();
   };
 
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Sandbox", href: "/sandbox" },
-  ];
-
   return (
     <nav className="border-b border-gray-500 bg-transparent w-full shadow-md">
       <div className="sm:px-6 lg:px-12">
@@ -40,17 +35,6 @@ const Navbar = () => {
             <Link href="/" className="flex-shrink-0 flex items-center">
               <Image src={Logo} alt="logo" width={140} />
             </Link>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-white hover:text-gray-400 px-3 py-2 rounded-md text-md font-bold"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
           </div>
           {user && (
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -123,21 +107,6 @@ const Navbar = () => {
                         <X className="h-6 w-6" aria-hidden="true" />
                       </Button>
                     </div>
-                  </div>
-                  <div className="mt-6">
-                    <nav className="grid gap-y-8">
-                      {navItems.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className="-m-3 p-3 flex items-center rounded-md hover:bg-gray-50"
-                        >
-                          <span className="ml-3 text-base font-medium text-gray-900">
-                            {item.label}
-                          </span>
-                        </Link>
-                      ))}
-                    </nav>
                   </div>
                 </div>
                 <div className="pt-4 pb-3 border-t border-gray-200">
