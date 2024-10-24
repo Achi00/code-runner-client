@@ -42,10 +42,11 @@ export default function LoginForm() {
         setEmailSent(true);
       } else {
         const data = await response.json();
-        setError("An error occurred during login");
+        console.log(data);
+        setError(data.error);
       }
     } catch (err) {
-      setError("An error occurred during login");
+      setError("An error occurred during sending email");
     } finally {
       setSubmitting(false);
     }

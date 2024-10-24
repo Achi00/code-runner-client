@@ -85,9 +85,6 @@ export default function ClientComponent({
         // No files returned
         setSelectedFileContent("");
       }
-
-      // console.log(fileContentData);
-      // console.log(selectedFileContent);
     } catch (error) {
       console.error("Error fetching files:", error);
     }

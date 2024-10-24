@@ -146,6 +146,7 @@ export default function LoginForm() {
                   type="email"
                   name="email"
                   placeholder="Email"
+                  autoComplete="email"
                   className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
                 />
                 <ErrorMessage
@@ -160,6 +161,7 @@ export default function LoginForm() {
                   type="password"
                   name="password"
                   placeholder="Password"
+                  autoComplete="new-password"
                   className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
                 />
                 <ErrorMessage
@@ -174,6 +176,7 @@ export default function LoginForm() {
                   type="password"
                   name="rePassword" // Fix the name here
                   placeholder="Confirm Password"
+                  autoComplete="new-password"
                   className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
                 />
                 <ErrorMessage

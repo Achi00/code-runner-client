@@ -49,14 +49,9 @@ export default function CodeEditor({
 
   // store if any html file has script tag
   const filesList = filesData.filteredFiles || [];
-  // console.log("file list:" + filesList);
   const entryFile = filesList.find((file) => file.endsWith(".js")) || "";
   const htmlFile = filesList.find((file) => file.endsWith(".html")) || "";
   const cssFile = filesList.find((file) => file.endsWith(".css")) || "";
-
-  useEffect(() => {
-    console.log(cssFile);
-  }, []);
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     setEditorInstance(editor); // Store the editor instance
@@ -95,7 +90,6 @@ export default function CodeEditor({
             }
             setUnsavedFiles({ html: false, javascript: false, css: false });
             setIsLoading(false);
-            console.log("JSDOM file updated & run seccesfully");
           } else {
             const data = await executeNodeCode({
               userId,
@@ -105,7 +99,6 @@ export default function CodeEditor({
             onCodeRun(data);
             setUnsavedFiles({ html: false, javascript: false, css: false });
             setIsLoading(false);
-            console.log("NODE JS file updated & run seccesfully");
           }
           setIsLoading(false);
         }
@@ -132,8 +125,6 @@ export default function CodeEditor({
     }
   }
   const handleSave = useCallback(async () => {
-    console.log("handle save");
-
     const jsContent =
       entryFile && fileContents[entryFile] ? fileContents[entryFile] : null;
     const htmlContent =
@@ -162,7 +153,6 @@ export default function CodeEditor({
 
           if (updatedData) {
             setUnsavedFiles({ html: false, javascript: false });
-            console.log("Files updated successfully");
           }
 
           setIsSaving(false);
@@ -171,8 +161,6 @@ export default function CodeEditor({
         setIsSaving(false);
         console.error("Error saving files:", error);
       }
-    } else {
-      console.log("No changes to save.");
     }
   }, [unsavedFiles, entryFile, htmlFile, fileContents, cssFile, userId]);
 
@@ -181,7 +169,6 @@ export default function CodeEditor({
       if (e.ctrlKey && e.key == "s") {
         e.preventDefault(); // Prevent the browser from opening the "Save As" dialog
         await handleSave();
-        console.log("File saved");
       }
     };
 
@@ -196,7 +183,7 @@ export default function CodeEditor({
 
   function handleEditorChange(value: string | undefined, event: any) {
     if (isUpdating.current) return;
-    console.log(unsavedFiles);
+    unsavedFiles;
     // Update fileContents with the new value
     setFileContents((prev) => ({
       ...prev,
@@ -241,7 +228,7 @@ export default function CodeEditor({
         return updatedTabs;
       });
     }
-    console.log(selectedFileContent);
+    selectedFileContent;
   }, [selectedFileName]);
 
   useEffect(() => {
@@ -291,7 +278,6 @@ export default function CodeEditor({
       editorInstance.setModel(model);
       isUpdating.current = false; // End of programmatic update
     }
-    // console.log(selectedFileContent);
   }, [
     selectedFileName,
     selectedFileContent,

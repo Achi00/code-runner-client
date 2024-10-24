@@ -1,6 +1,6 @@
 "use client";
-import { DependenciesResponse, Dependency } from "@/utils/types/Files";
-import React, { useEffect, useState } from "react";
+import { Dependency } from "@/utils/types/Files";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,9 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { Download, Package } from "lucide-react";
+import { Download, Package, RefreshCw } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import useSWR from "swr";
+import axios from "axios";
 
 interface DependenciesProps {
   dependencies: Dependency;
@@ -23,6 +25,8 @@ interface selectedPackage {
   version: string;
 }
 
+const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
 const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -30,6 +34,7 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
   const [selectedPackages, setSelectedPackages] = useState<selectedPackage[]>(
     []
   );
+  const [deps, setDeps] = useState(dependencies?.dependencies || []);
 
   const handleSelectPackage = (packageName: string, packageVersion: string) => {
     setSelectedPackages((prevPackages) => [
@@ -42,9 +47,17 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
     // handleSubmit(npm_package);
   };
 
-  useEffect(() => {
-    console.log("Updated selected packages:", selectedPackages);
-  }, [selectedPackages]);
+  // re-fetch list of dependencies in case added
+  const handleRefetch = async () => {
+    try {
+      // Fetch new dependencies data
+      const updatedData = await fetcher("/api/dependencies");
+      // Update the state with new data
+      setDeps(updatedData?.dependencies || []);
+    } catch (error) {
+      console.error("Error fetching dependencies:", error);
+    }
+  };
 
   const handleSubmit = async (userId: string) => {
     if (!userId) {
@@ -109,12 +122,18 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
     }
   };
 
-  const data = dependencies?.dependencies;
   return (
     <div className="w-full h-[70vh] flex flex-col">
       <div className="container mx-auto p-4 max-w-2xl flex flex-col h-full">
         <div className="mt-auto flex flex-col gap-4">
-          {data && data.length > 0 && (
+          <Button
+            onClick={handleRefetch}
+            className="flex items-center gap-2 bg-[#D0FB51] text-black hover:bg-[#a1c534]"
+          >
+            <RefreshCw />
+            Refresh
+          </Button>
+          {deps && deps.length > 0 && (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -124,7 +143,7 @@ const Dependencies = ({ dependencies, userId }: DependenciesProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((dep, index) => (
+                {deps.map((dep, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <Package className="h-4 w-4 text-muted-foreground" />

@@ -140,7 +140,6 @@ export async function executeNodeCode({
       throw new Error(`Error executing code: ${response.statusText}`);
     }
     const data = await response.json();
-    console.log(data);
     return data;
   } catch (error) {
     console.error("Failed to execute code:", error);
@@ -161,7 +160,6 @@ export async function deleteFile(userId: string, fileName: string) {
       throw new Error(`Error deleting file: ${res.statusText}`);
     }
     const data = await res.json();
-    console.log("File deleted successfully");
     return data;
   } catch (error) {
     console.error("Failed to delete file:", error);
@@ -181,9 +179,7 @@ export async function updateCodeFiles(
   if (!Array.isArray(filesList)) {
     throw new Error("filesList must be an array");
   }
-  // if (!htmlContent || !jsContent) {
-  //   console.error("html and js content is required");
-  // }
+
   // creating files array to pass multiple files to api for update
   const files = filesList
     .map((fileName) => {
@@ -217,7 +213,6 @@ export async function updateCodeFiles(
     if (!res.ok) {
       throw new Error(`Error updating file: ${res.statusText}`);
     }
-    console.log("All files updated successfully");
     return res;
   } catch (error) {
     console.error("Failed to update file:", error);
@@ -228,7 +223,6 @@ export async function updateCodeFiles(
 
 // get dependencies from user's package.json
 export async function getPackages(userId: string) {
-  console.log(userId);
   try {
     const res = await fetch(`http://localhost:8000/v1/install/packagelist`, {
       method: "post",

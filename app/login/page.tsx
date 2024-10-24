@@ -32,7 +32,6 @@ export default function LoginForm() {
         router.push("/sandbox"); // Redirect to dashboard on successful login
       } else {
         const data = await response.json();
-        console.log(data);
         setError(data.error || "An error occurred during login");
       }
     } catch (err) {
@@ -66,6 +65,7 @@ export default function LoginForm() {
                   type="email"
                   name="email"
                   placeholder="Email"
+                  autoComplete="email"
                   className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
                 />
                 <ErrorMessage
@@ -80,6 +80,7 @@ export default function LoginForm() {
                   type="password"
                   name="password"
                   placeholder="Password"
+                  autoComplete="current-password"
                   className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-gray-400"
                 />
                 <ErrorMessage

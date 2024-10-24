@@ -76,7 +76,7 @@ const Console = ({ codeOutput, onClear }: ConsoleProps) => {
                 ))
               ) : (
                 <p className="text-gray-400 flex items-center">
-                  No logs
+                  {codeOutput.logs.length >= 1 ? codeOutput.logs : "No Logs"}
                   <span className="inline-block w-2 h-4 bg-white ml-1 animate-blink"></span>
                 </p>
               )}

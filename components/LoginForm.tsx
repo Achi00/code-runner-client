@@ -18,8 +18,6 @@ export default function LoginForm() {
 
     if (response.ok) {
       router.push("/dashboard"); // Redirect to dashboard on successful login
-    } else {
-      console.log(response);
     }
   };
 

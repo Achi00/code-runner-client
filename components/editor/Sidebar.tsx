@@ -48,7 +48,6 @@ export default function Sidebar({
   const handleFileClick = (file: string[]) => {
     onFileSelect(file);
     setIsSelected(file);
-    console.log(file);
   };
 
   useEffect(() => {
@@ -102,7 +101,6 @@ export default function Sidebar({
         await deleteFile(userId, fileName);
         // Update the file list after successful deletion
         setFiles(files.filter((f) => f !== fileName));
-        console.log(`File deleted: ${fileName}`);
         toast.success(`File: ${fileName} deleted successfully`);
       } catch (error) {
         console.error("Failed to delete file:", error);
@@ -139,14 +137,12 @@ export default function Sidebar({
         setError(errorData.error);
         setIsLoading(false);
       } else {
-        console.log("File created successfully");
         setFiles([...files, fileName]); // Update the local files state with the new file
         setInputValue("");
         setShowInput(false);
         setIsLoading(false);
       }
     } catch (err) {
-      console.log(err);
       setIsLoading(false);
       setError("Error creating file. Please try again.");
     }
@@ -155,10 +151,6 @@ export default function Sidebar({
   const handleInputBlur = () => {
     if (trimmedValue !== "") {
       if (extension && SUPPORTED_EXTENSIONS.includes(extension)) {
-        console.log("New file created:", trimmedValue);
-        // setFiles([...files, trimmedValue]);
-        // setInputValue("");
-        // setShowInput(false);
         createFile(trimmedValue);
         setError("");
       } else {
@@ -184,7 +176,6 @@ export default function Sidebar({
         setShowInput(false);
       } else {
         if (extension && SUPPORTED_EXTENSIONS.includes(extension)) {
-          console.log("New file created:", trimmedValue);
           createFile(trimmedValue);
           setError("");
         } else {
